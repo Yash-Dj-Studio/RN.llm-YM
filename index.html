@@ -1,0 +1,3183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YM.llm-by Yash ManoJ -Workspace</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+            serif: ['Georgia', 'Cambria', 'Times New Roman', 'Times', 'serif']
+          },
+          boxShadow: {
+            'glow-green': '0 0 15px rgba(34, 197, 94, 0.5)',
+            'glow-red': '0 0 15px rgba(239, 68, 68, 0.5)',
+            'glow-blue': '0 0 15px rgba(59, 130, 246, 0.4)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- PDF.js Library for PDF parsing & rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  </script>
+
+  <!-- Chart.js for Trend Analysis & Graph Creator -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .light ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 3px;
+    }
+    
+    /* Elegant transitions */
+    .theme-transition {
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, fill 0.3s ease;
+    }
+
+    #pdf-canvas-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .pdf-page-wrapper {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+      border-radius: 6px;
+      overflow: hidden;
+      background: white;
+    }
+    .dark .pdf-page-wrapper {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+    
+    /* Code block styling */
+    pre {
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 0.75rem;
+      border-radius: 0.375rem;
+      overflow-x: auto;
+      font-size: 0.875rem;
+      margin: 0.5rem 0;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.875rem;
+    }
+    
+    /* Active file focus ring */
+    .active-file-item {
+      border-left: 4px solid #3b82f6;
+    }
+
+    /* Mind Map canvas style */
+    .mindmap-node {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+</head>
+<body class="light bg-slate-50 text-slate-900 font-sans h-screen flex flex-col overflow-hidden theme-transition dark:bg-slate-950 dark:text-slate-100">
+
+  <!-- TOP BAR -->
+  <header class="h-16 border-b border-slate-200 bg-white/80 backdrop-blur px-6 flex items-center justify-between z-30 theme-transition dark:bg-slate-900/80 dark:border-slate-800 shrink-0">
+    <!-- Brand Info -->
+    <div class="flex items-center space-x-3">
+      <div class="bg-blue-600 text-white p-2 rounded-lg flex items-center justify-center">
+        <i data-lucide="binary" class="w-5 h-5"></i>
+      </div>
+      <div class="hidden sm:block">
+        <h1 class="font-bold text-base leading-tight tracking-tight">Research Notebook AI</h1>
+        <p class="text-[10px] text-slate-400 font-medium tracking-wider uppercase">Workspace &amp; Transformation Engine</p>
+      </div>
+    </div>
+
+    <!-- Segmented Mode Control -->
+    <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex items-center shadow-inner">
+      <button 
+        id="mode-school-btn" 
+        class="px-4 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all duration-200 bg-white text-blue-600 shadow-sm dark:bg-slate-700 dark:text-blue-400"
+      >
+        <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
+        <span>SCHOOL MODE</span>
+      </button>
+      <button 
+        id="mode-business-btn" 
+        class="px-4 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all duration-200 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+      >
+        <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
+        <span>BUSINESS MODE</span>
+      </button>
+    </div>
+
+    <!-- Connect & Theme Controls -->
+    <div class="flex items-center space-x-3">
+      <div class="relative flex items-center">
+        <div class="relative">
+          <input 
+            type="password" 
+            id="api-key-input" 
+            placeholder="Enter Gemini API Key" 
+            class="w-32 md:w-48 px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white theme-transition dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900"
+          />
+          <button id="toggle-key-visibility" class="absolute right-2 top-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+            <i data-lucide="eye" class="w-3.5 h-3.5" id="eye-icon"></i>
+          </button>
+        </div>
+        <button 
+          id="connect-btn"
+          class="ml-2 px-3 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-1"
+        >
+          <span>Connect</span>
+        </button>
+      </div>
+
+      <!-- Glowing Status -->
+      <div class="flex items-center space-x-1.5">
+        <div id="status-glow" class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-glow-red animate-pulse"></div>
+        <span id="status-text" class="text-xs font-medium text-slate-500 dark:text-slate-400 hidden md:inline">Disconnected</span>
+      </div>
+
+      <div class="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block"></div>
+
+      <!-- Theme Mode -->
+      <button 
+        id="theme-toggle" 
+        class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors"
+        aria-label="Toggle Theme"
+      >
+        <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
+        <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CANVAS CONTAINER -->
+  <main class="flex-1 flex overflow-hidden relative">
+
+    <!-- LEFT SIDEBAR: DOCUMENTS & SMART HISTORY -->
+    <aside 
+      id="left-sidebar" 
+      class="w-[280px] shrink-0 border-r border-slate-200 bg-slate-50/50 flex flex-col h-full theme-transition dark:bg-slate-900/20 dark:border-slate-800 absolute lg:relative z-20 -translate-x-full lg:translate-x-0 transition-transform duration-300"
+    >
+      <!-- Upload Dropzone -->
+      <div class="p-4 border-b border-slate-200 dark:border-slate-800">
+        <div 
+          id="dropzone" 
+          class="border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 rounded-xl p-3.5 text-center cursor-pointer bg-white dark:bg-slate-900/50 transition-all duration-200"
+        >
+          <input type="file" id="file-input" accept=".pdf" multiple class="hidden" />
+          <div class="flex flex-col items-center">
+            <div class="p-1.5 bg-blue-50 dark:bg-blue-950/40 rounded-full text-blue-600 dark:text-blue-400 mb-1">
+              <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+            </div>
+            <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">Drag & Drop PDF</p>
+            <p class="text-[10px] text-slate-400">or browse locally</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Segmented sidebar controls: Documents vs Workspace History -->
+      <div class="px-4 pt-3 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 shrink-0">
+        <button id="sidebar-tab-docs" class="pb-2 text-xs font-bold border-b-2 border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 flex-1 text-center">
+          Documents
+        </button>
+        <button id="sidebar-tab-history" class="pb-2 text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex-1 text-center">
+          Workspace History
+        </button>
+      </div>
+
+      <!-- Content Area of Sidebar -->
+      <div class="flex-1 overflow-y-auto px-4 py-3 flex flex-col">
+        <!-- Tab 1: Documents list -->
+        <div id="sidebar-docs-list-container" class="space-y-2 flex-1">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Library</span>
+            <span id="doc-counter" class="text-[10px] bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded-full font-bold">0 Items</span>
+          </div>
+          <div id="file-list" class="space-y-2">
+            <div id="sidebar-empty" class="text-center py-8 text-slate-400 dark:text-slate-500">
+              <i data-lucide="file-text" class="w-8 h-8 mx-auto mb-2 stroke-1 opacity-60"></i>
+              <p class="text-xs">No research PDFs imported.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Smart History List -->
+        <div id="sidebar-history-container" class="space-y-2 flex-1 hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Workspace Exports</span>
+          </div>
+          <div id="history-items-list" class="space-y-2">
+            <div class="text-center py-8 text-slate-400">
+              <i data-lucide="history" class="w-8 h-8 mx-auto mb-2 stroke-1 opacity-50"></i>
+              <p class="text-xs">No generated files in workspace history yet.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER PANEL: DUAL WORKSPACE (READER VS TRANSFORMATION TOOLS) -->
+    <section class="flex-1 flex flex-col h-full bg-slate-100/50 dark:bg-slate-900/30 overflow-hidden relative">
+      
+      <!-- Center Main Navigation Tabs -->
+      <div class="h-12 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-6 z-10 shrink-0">
+        <div class="flex items-center space-x-4">
+          <button id="sidebar-toggle" class="lg:hidden p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          
+          <!-- Tab selector -->
+          <div class="flex space-x-1">
+            <button id="tab-reader-btn" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 flex items-center space-x-1.5">
+              <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+              <span>Reader View</span>
+            </button>
+            <button id="tab-workspace-btn" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 flex items-center space-x-1.5">
+              <i data-lucide="tool" class="w-3.5 h-3.5" id="workspace-tab-icon"></i>
+              <span id="workspace-tab-text">Study Tools</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Context Notification in center header -->
+        <span id="active-viewer-filename" class="text-xs text-slate-400 font-medium truncate max-w-[150px] md:max-w-[300px]">
+          No active document
+        </span>
+
+        <!-- Right Side Panel Trigger -->
+        <button id="chat-toggle" class="xl:hidden p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500">
+          <i data-lucide="message-square" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- VIEWPORT 1: READER -->
+      <div id="reader-view-panel" class="flex-1 flex flex-col overflow-hidden">
+        <!-- PDF Render Control Header bar -->
+        <div class="h-10 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 flex items-center justify-between px-4 shrink-0">
+          <div id="viewer-controls" class="hidden flex items-center justify-between w-full">
+            <div class="flex items-center space-x-2">
+              <button id="prev-page" class="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              </button>
+              <span class="text-xs text-slate-500">Page <span id="current-page-num" class="font-bold">0</span> of <span id="total-page-count">0</span></span>
+              <button id="next-page" class="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button id="zoom-out" class="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"><i data-lucide="zoom-out" class="w-3.5 h-3.5"></i></button>
+              <span id="zoom-percentage" class="text-xs font-semibold text-slate-500 min-w-10 text-center">100%</span>
+              <button id="zoom-in" class="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"><i data-lucide="zoom-in" class="w-3.5 h-3.5"></i></button>
+              <button id="fit-width" class="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400" title="Fit width"><i data-lucide="maximize-2" class="w-3.5 h-3.5"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div id="pdf-scroll-viewport" class="flex-1 overflow-y-auto overflow-x-auto p-6 flex flex-col items-center justify-start">
+          <div id="reader-empty" class="m-auto text-center max-w-sm px-6 py-12 flex flex-col items-center">
+            <div class="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4">
+              <i data-lucide="book-open" class="w-8 h-8 stroke-1.5"></i>
+            </div>
+            <h2 class="text-sm font-bold text-slate-800 dark:text-slate-200">No Document Active</h2>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">
+              Upload study notes or business documentation in the sidebar, then select a file to render here.
+            </p>
+          </div>
+
+          <div id="reader-loading" class="hidden m-auto text-center flex flex-col items-center">
+            <div class="w-12 h-12 rounded-full border-4 border-blue-600/25 border-t-blue-600 animate-spin mb-3"></div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Rendering document content...</p>
+          </div>
+
+          <div id="pdf-canvas-container" class="hidden w-full max-w-3xl"></div>
+        </div>
+      </div>
+
+      <!-- VIEWPORT 2: TRANSFORMATION KNOWLEDGE WORKSPACE -->
+      <div id="transformation-workspace-panel" class="flex-1 overflow-y-auto hidden">
+        
+        <!-- Standard Landing Workspace view: Grid of available tools -->
+        <div id="workspace-landing" class="p-6">
+          <div class="mb-6">
+            <h2 id="workspace-title" class="text-lg font-bold text-slate-800 dark:text-slate-100">Study Tools</h2>
+            <p id="workspace-subtitle" class="text-xs text-slate-400">Transform raw textbook data into interactive study assets.</p>
+          </div>
+
+          <!-- Dynamic Grid Container filled by JS based on Mode -->
+          <div id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- WORKSPACE DYNAMIC PLAYGROUND (This represents active tool visualizers) -->
+        <div id="workspace-active-playground" class="hidden h-full flex flex-col">
+          <div class="h-12 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 shrink-0">
+            <div class="flex items-center space-x-2">
+              <button id="playground-back-btn" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 flex items-center space-x-1">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span class="text-xs">Exit Tool</span>
+              </button>
+              <div class="h-4 w-px bg-slate-300 dark:bg-slate-800"></div>
+              <h3 id="active-tool-title" class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Flashcard Generator</h3>
+            </div>
+            
+            <div id="playground-global-actions" class="flex items-center space-x-2">
+              <!-- Dynamically populated export / action buttons -->
+            </div>
+          </div>
+
+          <div class="flex-1 overflow-y-auto p-6" id="playground-content-container">
+            <!-- Active tool templates injection -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- RIGHT PANEL: CONTEXTUAL AI CHAT (RAG HUB) -->
+    <section 
+      id="right-chat-panel" 
+      class="w-[400px] shrink-0 border-l border-slate-200 bg-white flex flex-col h-full theme-transition dark:bg-slate-900 dark:border-slate-800 absolute xl:relative right-0 z-20 translate-x-full xl:translate-x-0 transition-transform duration-300"
+    >
+      <!-- Chat Header -->
+      <div class="h-12 border-b border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between shrink-0">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="sparkles" class="w-4 h-4 text-blue-600" id="assistant-icon"></i>
+          <span id="chat-header-title" class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Study Assistant</span>
+        </div>
+        
+        <div class="flex items-center space-x-1">
+          <button id="clear-chat-btn" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" title="Clear Chat History">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+          <button id="export-chat-btn" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" title="Export Conversation">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat Feed -->
+      <div id="chat-feed" class="flex-1 overflow-y-auto p-4 space-y-4">
+        <!-- Welcomes -->
+        <div class="flex items-start space-x-3 msg-ai">
+          <div class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <i data-lucide="bot" class="w-4 h-4" id="bot-avatar-icon"></i>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-700 dark:text-slate-300 max-w-[85%] leading-relaxed">
+            <p class="font-medium mb-1" id="chat-welcome-title">Hello! I am your Academic Study Coach.</p>
+            <p id="chat-welcome-desc">Upload study materials, slide decks, or lecture files. I will clarify educational terms and search text with citations! Feel free to switch between School and Business modes up top.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RAG Context Status -->
+      <div id="rag-status-bar" class="px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between text-[11px] text-slate-500">
+        <div class="flex items-center space-x-1.5 truncate">
+          <i data-lucide="database" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+          <span class="truncate" id="rag-status-text">0 items indexed</span>
+        </div>
+        <span id="rag-total-chars" class="shrink-0 text-[10px] text-slate-400">0 chars</span>
+      </div>
+
+      <!-- Input Bar Container -->
+      <div class="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+        <div class="relative flex items-end border border-slate-200 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-blue-500 bg-slate-50 dark:bg-slate-800/50 transition-all">
+          <textarea 
+            id="chat-textarea" 
+            rows="1" 
+            placeholder="Ask about your research papers..." 
+            class="flex-1 max-h-32 min-h-[38px] p-2.5 bg-transparent resize-none border-none outline-none focus:ring-0 text-xs text-slate-800 dark:text-slate-100"
+          ></textarea>
+          
+          <div class="p-1.5 flex items-center">
+            <button 
+              id="send-message-btn" 
+              class="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 text-white flex items-center justify-center transition-all shadow-sm"
+              disabled
+            >
+              <i data-lucide="arrow-up" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <!-- BACKDROP OVERLAY FOR RESPONSIVE NAVIGATION -->
+  <div id="backdrop-overlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-10 transition-opacity duration-300"></div>
+
+  <!-- FLOATING WORKSPACE NOTIFICATION SYSTEM -->
+  <div id="notification-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-slate-50 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 z-50 text-xs translate-y-20 opacity-0 transition-all duration-300 pointer-events-none dark:bg-slate-100 dark:text-slate-950">
+    <div id="toast-icon-container" class="p-1 rounded-full">
+      <i data-lucide="alert-circle" class="w-4 h-4" id="toast-icon"></i>
+    </div>
+    <span id="toast-message" class="font-medium">Notification text</span>
+  </div>
+
+  <!-- INTERACTIVE SYSTEM DIALOG: OUTPUT VERIFICATION SCREEN -->
+  <div id="verification-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+        <div class="flex items-center space-x-2">
+          <div class="p-1.5 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-slate-800 dark:text-slate-100">Workspace Generation Safeguard</h3>
+        </div>
+        <button id="close-verify-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 text-xs">
+        <div>
+          <h4 class="font-semibold text-slate-500 mb-1 uppercase tracking-wider text-[10px]">Identified Context / Data Sources</h4>
+          <p id="verify-data-source" class="text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 p-2 rounded">No loaded files detected.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-slate-500 mb-1 uppercase tracking-wider text-[10px]">Key Synthesis Assumptions</h4>
+          <p id="verify-assumptions" class="text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 p-2 rounded">Generating contextual answers from extracted page data elements.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <h4 class="font-semibold text-slate-500 mb-1 uppercase tracking-wider text-[10px]">Identified Missing Blocks</h4>
+            <p id="verify-missing" class="text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 p-2 rounded">Dynamic context gaps analyzed on retrieval.</p>
+          </div>
+          <div>
+            <h4 class="font-semibold text-slate-500 mb-1 uppercase tracking-wider text-[10px]">AI Reliability Score</h4>
+            <div class="flex items-center space-x-2 bg-slate-50 dark:bg-slate-800 p-2 rounded">
+              <span id="verify-confidence" class="font-bold text-green-600 dark:text-green-400">95% (High Context)</span>
+            </div>
+          </div>
+        </div>
+        <div class="pt-2">
+          <label class="block font-semibold text-slate-500 mb-1 uppercase tracking-wider text-[10px]">Tailor Prompt Focus Instructions (Optional)</label>
+          <textarea id="verify-custom-input" placeholder="e.g. Focus deeply on the chemical equations on page 3..." class="w-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-1 focus:ring-blue-500 focus:outline-none h-16 resize-none"></textarea>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-end space-x-2">
+        <button id="cancel-verify-btn" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">
+          Cancel
+        </button>
+        <button id="confirm-verify-btn" class="px-4 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center space-x-1">
+          <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+          <span>Approve &amp; Generate Output</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT SYSTEM LOGIC -->
+  <script>
+    // --- APP GLOBAL STATE ---
+    const state = {
+      theme: 'light',
+      apiKey: '',
+      connected: false,
+      documents: [],        // { id, name, size, pages: [{pageNum, text}], contentText, rawBytes }
+      activeDocId: null,    
+      currentPage: 1,
+      totalPageCount: 0,
+      zoomLevel: 1.0,       
+      chatHistory: [],      
+      isGenerating: false,
+      pdfDocumentProxy: null, 
+      resolvedModel: null,  
+      activeMode: 'school', // 'school' | 'business'
+      workspaceHistory: []  // { id, title, type, content, timestamp }
+    };
+
+    // --- DOM ELEMENT REFERENCES ---
+    const el = {
+      apiKeyInput: document.getElementById('api-key-input'),
+      toggleKeyVisibility: document.getElementById('toggle-key-visibility'),
+      eyeIcon: document.getElementById('eye-icon'),
+      connectBtn: document.getElementById('connect-btn'),
+      statusGlow: document.getElementById('status-glow'),
+      statusText: document.getElementById('status-text'),
+      themeToggle: document.getElementById('theme-toggle'),
+      infoBar: document.getElementById('info-bar'),
+      infoBarText: document.getElementById('info-bar-text'),
+      
+      modeSchoolBtn: document.getElementById('mode-school-btn'),
+      modeBusinessBtn: document.getElementById('mode-business-btn'),
+      
+      dropzone: document.getElementById('dropzone'),
+      fileInput: document.getElementById('file-input'),
+      fileList: document.getElementById('file-list'),
+      sidebarEmpty: document.getElementById('sidebar-empty'),
+      docCounter: document.getElementById('doc-counter'),
+      leftSidebar: document.getElementById('left-sidebar'),
+      sidebarTabDocs: document.getElementById('sidebar-tab-docs'),
+      sidebarTabHistory: document.getElementById('sidebar-tab-history'),
+      sidebarDocsListContainer: document.getElementById('sidebar-docs-list-container'),
+      sidebarHistoryContainer: document.getElementById('sidebar-history-container'),
+      historyItemsList: document.getElementById('history-items-list'),
+      
+      activeViewerFilename: document.getElementById('active-viewer-filename'),
+      viewerControls: document.getElementById('viewer-controls'),
+      currentPageNum: document.getElementById('current-page-num'),
+      totalPageCount: document.getElementById('total-page-count'),
+      prevPageBtn: document.getElementById('prev-page'),
+      nextPageBtn: document.getElementById('next-page'),
+      zoomOutBtn: document.getElementById('zoom-out'),
+      zoomInBtn: document.getElementById('zoom-in'),
+      zoomPercentage: document.getElementById('zoom-percentage'),
+      fitWidthBtn: document.getElementById('fit-width'),
+      
+      pdfScrollViewport: document.getElementById('pdf-scroll-viewport'),
+      readerEmpty: document.getElementById('reader-empty'),
+      readerLoading: document.getElementById('reader-loading'),
+      pdfCanvasContainer: document.getElementById('pdf-canvas-container'),
+      
+      tabReaderBtn: document.getElementById('tab-reader-btn'),
+      tabWorkspaceBtn: document.getElementById('tab-workspace-btn'),
+      readerViewPanel: document.getElementById('reader-view-panel'),
+      transformationWorkspacePanel: document.getElementById('transformation-workspace-panel'),
+      workspaceTitle: document.getElementById('workspace-title'),
+      workspaceSubtitle: document.getElementById('workspace-subtitle'),
+      toolsGrid: document.getElementById('tools-grid'),
+      workspaceLanding: document.getElementById('workspace-landing'),
+      workspaceActivePlayground: document.getElementById('workspace-active-playground'),
+      playgroundBackBtn: document.getElementById('playground-back-btn'),
+      activeToolTitle: document.getElementById('active-tool-title'),
+      playgroundGlobalActions: document.getElementById('playground-global-actions'),
+      playgroundContentContainer: document.getElementById('playground-content-container'),
+      
+      rightChatPanel: document.getElementById('right-chat-panel'),
+      clearChatBtn: document.getElementById('clear-chat-btn'),
+      exportChatBtn: document.getElementById('export-chat-btn'),
+      chatFeed: document.getElementById('chat-feed'),
+      chatHeaderTitle: document.getElementById('chat-header-title'),
+      chatWelcomeTitle: document.getElementById('chat-welcome-title'),
+      chatWelcomeDesc: document.getElementById('chat-welcome-desc'),
+      assistantIcon: document.getElementById('assistant-icon'),
+      botAvatarIcon: document.getElementById('bot-avatar-icon'),
+      ragStatusBar: document.getElementById('rag-status-bar'),
+      ragStatusText: document.getElementById('rag-status-text'),
+      ragTotalChars: document.getElementById('rag-total-chars'),
+      chatTextarea: document.getElementById('chat-textarea'),
+      sendMessageBtn: document.getElementById('send-message-btn'),
+      
+      sidebarToggle: document.getElementById('sidebar-toggle'),
+      chatToggle: document.getElementById('chat-toggle'),
+      backdropOverlay: document.getElementById('backdrop-overlay'),
+      
+      notificationToast: document.getElementById('notification-toast'),
+      toastMessage: document.getElementById('toast-message'),
+      toastIcon: document.getElementById('toast-icon'),
+      toastIconContainer: document.getElementById('toast-icon-container'),
+
+      // Verification Modal references
+      verificationModal: document.getElementById('verification-modal'),
+      closeVerifyBtn: document.getElementById('close-verify-btn'),
+      cancelVerifyBtn: document.getElementById('cancel-verify-btn'),
+      confirmVerifyBtn: document.getElementById('confirm-verify-btn'),
+      verifyDataSource: document.getElementById('verify-data-source'),
+      verifyAssumptions: document.getElementById('verify-assumptions'),
+      verifyMissing: document.getElementById('verify-missing'),
+      verifyConfidence: document.getElementById('verify-confidence'),
+      verifyCustomInput: document.getElementById('verify-custom-input'),
+
+      // Dynamic switchable elements references
+      workspaceTabIcon: document.getElementById('workspace-tab-icon'),
+      workspaceTabText: document.getElementById('workspace-tab-text')
+    };
+
+    // --- MODE DATA SCHEMAS FOR DYNAMIC LOADING ---
+    const workspaceTools = {
+      school: [
+        { id: 'school_flashcards', title: 'Flashcard Generator', icon: 'layers', desc: 'Create study flashcards complete with Q&As, ratings, and Anki CSV compatibility.', color: 'border-emerald-200 dark:border-emerald-800 text-emerald-500' },
+        { id: 'school_questions', title: 'Question Generator', icon: 'help-circle', desc: 'Create multiple choice, exam structure revision questions graded with clear answers.', color: 'border-violet-200 dark:border-violet-800 text-violet-500' },
+        { id: 'school_dictionary', title: 'Word Meaning Tool', icon: 'book', desc: 'Extract core complex terminology side-by-side using local references versus universal explanation.', color: 'border-amber-200 dark:border-amber-800 text-amber-500' },
+        { id: 'school_finder', title: 'Word Finder & Concordance', icon: 'search', desc: 'Extract statistics on frequencies and map specific word/concordance occurrences across documents.', color: 'border-blue-200 dark:border-blue-800 text-blue-500' },
+        { id: 'school_mindmap', title: 'Mind Map Builder', icon: 'git-branch', desc: 'Construct responsive and collapsible node relationships based on document contents.', color: 'border-indigo-200 dark:border-indigo-800 text-indigo-500' },
+        { id: 'school_slides', title: 'Presentation Maker', icon: 'presentation', desc: 'Compile professional student slide briefs with editable notes, frameworks, and downloads.', color: 'border-pink-200 dark:border-pink-800 text-pink-500' }
+      ],
+      business: [
+        { id: 'business_trend', title: 'Market Trend Analyzer', icon: 'trending-up', desc: 'Analyze data arrays, growth opportunities, market shifts, and risk priorities from executive documents.', color: 'border-rose-200 dark:border-rose-800 text-rose-500' },
+        { id: 'business_deck', title: 'Investor Pitch Creator', icon: 'award', desc: 'Transform company resources into investor-grade structures: SWOT, growth plans, roadmaps.', color: 'border-sky-200 dark:border-sky-800 text-sky-500' },
+        { id: 'business_charts', title: 'Analytical Graph Creator', icon: 'bar-chart-2', desc: 'Extract and plot dynamic statistical indicators (Line, Bar, Pie charts) natively via Chart.js.', color: 'border-cyan-200 dark:border-cyan-800 text-cyan-500' },
+        { id: 'business_sheets', title: 'Table Spreadsheet Maker', icon: 'table', desc: 'Auto-detect tables and extract rows with dynamic client-side sorting and CSV spreadsheets export.', color: 'border-teal-200 dark:border-teal-800 text-teal-500' },
+        { id: 'business_invoice', title: 'Interactive Billing Engine', icon: 'file-spreadsheet', desc: 'Synthesize templates representing services or metrics identified inside financial sheets.', color: 'border-yellow-200 dark:border-yellow-800 text-yellow-500' }
+      ]
+    };
+
+    // --- INITIALIZATION ---
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. Theme Configuration
+      const storedTheme = localStorage.getItem('research_notebook_theme') || 'light';
+      setTheme(storedTheme);
+      
+      // 2. Load cached API Key
+      const storedKey = localStorage.getItem('gemini_api_key') || '';
+      if (storedKey) {
+        el.apiKeyInput.value = storedKey;
+        state.apiKey = storedKey;
+        verifyAndConnectApiKey(storedKey);
+      }
+      
+      // 3. Lucide Setup
+      lucide.createIcons();
+
+      // 4. Load initial Workspace mode grid view
+      loadWorkspaceGrid();
+
+      // 5. Connect event listeners
+      setupEventListeners();
+    });
+
+    // --- CORE TOAST & MODAL SYSTEM (Client-Side Non-Blocking) ---
+    function showToast(message, type = 'success') {
+      el.toastMessage.textContent = message;
+      el.toastIconContainer.className = "p-1 rounded-full ";
+      
+      if (type === 'success') {
+        el.toastIconContainer.classList.add('bg-green-100', 'text-green-600', 'dark:bg-green-950/30', 'dark:text-green-400');
+        el.toastIcon.setAttribute('data-lucide', 'check');
+      } else if (type === 'error') {
+        el.toastIconContainer.classList.add('bg-red-100', 'text-red-600', 'dark:bg-red-950/30', 'dark:text-red-400');
+        el.toastIcon.setAttribute('data-lucide', 'x');
+      } else {
+        el.toastIconContainer.classList.add('bg-blue-100', 'text-blue-600', 'dark:bg-blue-950/30', 'dark:text-blue-400');
+        el.toastIcon.setAttribute('data-lucide', 'info');
+      }
+      lucide.createIcons();
+      
+      el.notificationToast.classList.remove('translate-y-20', 'opacity-0');
+      el.notificationToast.classList.add('translate-y-0', 'opacity-100');
+      
+      setTimeout(() => {
+        el.notificationToast.classList.add('translate-y-20', 'opacity-0');
+        el.notificationToast.classList.remove('translate-y-0', 'opacity-100');
+      }, 4000);
+    }
+
+    // --- THEME & MODE MANAGEMENT ---
+    function setTheme(newTheme) {
+      state.theme = newTheme;
+      localStorage.setItem('research_notebook_theme', newTheme);
+      
+      if (newTheme === 'dark') {
+        document.body.classList.remove('light');
+        document.body.classList.add('dark');
+      } else {
+        document.body.classList.remove('dark');
+        document.body.classList.add('light');
+      }
+    }
+
+    function changeWorkspaceMode(mode) {
+      if (state.activeMode === mode) return;
+      state.activeMode = mode;
+      
+      // Update toggle buttons design
+      if (mode === 'school') {
+        el.modeSchoolBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all duration-200 bg-white text-blue-600 shadow-sm dark:bg-slate-700 dark:text-blue-400";
+        el.modeBusinessBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all duration-200 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200";
+        
+        // Chat styles dynamic adjust
+        el.chatHeaderTitle.textContent = "Study Assistant";
+        el.assistantIcon.className = "w-4 h-4 text-blue-600";
+        el.botAvatarIcon.className = "w-4 h-4 text-blue-600";
+        el.chatWelcomeTitle.textContent = "Hello! I am your Academic Study Coach.";
+        el.chatWelcomeDesc.textContent = "Upload study materials, slide decks, or lecture files. I will clarify educational terms and search text with citations! Feel free to switch between School and Business modes up top.";
+        
+        el.workspaceTabIcon.setAttribute('data-lucide', 'graduation-cap');
+        el.workspaceTabText.textContent = "Study Tools";
+      } else {
+        el.modeBusinessBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all duration-200 bg-white text-blue-600 shadow-sm dark:bg-slate-700 dark:text-blue-400";
+        el.modeSchoolBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all duration-200 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200";
+        
+        // Dynamic adjust
+        el.chatHeaderTitle.textContent = "Corporate Strategy Hub";
+        el.assistantIcon.className = "w-4 h-4 text-rose-600";
+        el.botAvatarIcon.className = "w-4 h-4 text-rose-600";
+        el.chatWelcomeTitle.textContent = "Hello! I am your Business Analyst Assistant.";
+        el.chatWelcomeDesc.textContent = "In Business Mode, I leverage an executive RAG framework to build trend tables, investor slide configurations, and invoice structures from operational reports.";
+        
+        el.workspaceTabIcon.setAttribute('data-lucide', 'briefcase');
+        el.workspaceTabText.textContent = "Business Tools";
+      }
+
+      lucide.createIcons();
+      loadWorkspaceGrid();
+      
+      // Reset active view play area and show landing index
+      el.workspaceActivePlayground.classList.add('hidden');
+      el.workspaceLanding.classList.remove('hidden');
+      
+      showToast(`Switched workspace into ${mode.toUpperCase()} MODE.`, 'info');
+    }
+
+    // --- EVENT LISTENERS BINDING ---
+    function setupEventListeners() {
+      // Toggle sidebars
+      el.sidebarToggle.addEventListener('click', toggleMobileSidebar);
+      el.chatToggle.addEventListener('click', toggleMobileChat);
+      el.backdropOverlay.addEventListener('click', closeAllMobilePanels);
+
+      // Mode selection switcher
+      el.modeSchoolBtn.addEventListener('click', () => changeWorkspaceMode('school'));
+      el.modeBusinessBtn.addEventListener('click', () => changeWorkspaceMode('business'));
+
+      // Sidebar Tab Switching Docs vs History
+      el.sidebarTabDocs.addEventListener('click', () => switchSidebarTab('docs'));
+      el.sidebarTabHistory.addEventListener('click', () => switchSidebarTab('history'));
+
+      // Header control buttons
+      el.themeToggle.addEventListener('click', () => setTheme(state.theme === 'light' ? 'dark' : 'light'));
+      el.toggleKeyVisibility.addEventListener('click', () => {
+        const isPassword = el.apiKeyInput.type === 'password';
+        el.apiKeyInput.type = isPassword ? 'text' : 'password';
+        el.eyeIcon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+        lucide.createIcons();
+      });
+      el.connectBtn.addEventListener('click', () => {
+        const val = el.apiKeyInput.value.trim();
+        if (val) verifyAndConnectApiKey(val);
+      });
+
+      // Navigation tab elements (Reader View vs Knowledge Workspace)
+      el.tabReaderBtn.addEventListener('click', () => switchMainTab('reader'));
+      el.tabWorkspaceBtn.addEventListener('click', () => switchMainTab('workspace'));
+
+      // PDF drag & drop handlers
+      el.dropzone.addEventListener('click', () => el.fileInput.click());
+      el.dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        el.dropzone.classList.add('border-blue-500', 'bg-blue-50/50', 'dark:bg-blue-950/20');
+      });
+      el.dropzone.addEventListener('dragleave', () => {
+        el.dropzone.classList.remove('border-blue-500', 'bg-blue-50/50', 'dark:bg-blue-950/20');
+      });
+      el.dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        el.dropzone.classList.remove('border-blue-500', 'bg-blue-50/50', 'dark:bg-blue-950/20');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          handleFileSelection(e.dataTransfer.files);
+        }
+      });
+      el.fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          handleFileSelection(e.target.files);
+        }
+      });
+
+      // Chat triggers
+      el.chatTextarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          triggerChatMessage();
+        }
+      });
+      el.chatTextarea.addEventListener('input', updateSendButtonState);
+      el.sendMessageBtn.addEventListener('click', triggerChatMessage);
+      el.clearChatBtn.addEventListener('click', clearChatFeed);
+      el.exportChatBtn.addEventListener('click', exportChatHistory);
+
+      // PDF Navigation controls
+      el.prevPageBtn.addEventListener('click', () => changePdfPage(state.currentPage - 1));
+      el.nextPageBtn.addEventListener('click', () => changePdfPage(state.currentPage + 1));
+      el.zoomInBtn.addEventListener('click', () => changeZoom(0.2));
+      el.zoomOutBtn.addEventListener('click', () => changeZoom(-0.2));
+      el.fitWidthBtn.addEventListener('click', fitPdfToViewportWidth);
+
+      // Playground Back Exit control
+      el.playgroundBackBtn.addEventListener('click', () => {
+        el.workspaceActivePlayground.classList.add('hidden');
+        el.workspaceLanding.classList.remove('hidden');
+      });
+
+      // Verification Safeguard Dialog controls
+      el.closeVerifyBtn.addEventListener('click', closeVerificationModal);
+      el.cancelVerifyBtn.addEventListener('click', closeVerificationModal);
+    }
+
+    function switchSidebarTab(tab) {
+      if (tab === 'docs') {
+        el.sidebarTabDocs.className = "pb-2 text-xs font-bold border-b-2 border-blue-600 text-blue-600 dark:border-b-2 dark:border-blue-400 dark:text-blue-400 flex-1 text-center";
+        el.sidebarTabHistory.className = "pb-2 text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex-1 text-center";
+        el.sidebarDocsListContainer.classList.remove('hidden');
+        el.sidebarHistoryContainer.classList.add('hidden');
+      } else {
+        el.sidebarTabHistory.className = "pb-2 text-xs font-bold border-b-2 border-blue-600 text-blue-600 dark:border-b-2 dark:border-blue-400 dark:text-blue-400 flex-1 text-center";
+        el.sidebarTabDocs.className = "pb-2 text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex-1 text-center";
+        el.sidebarHistoryContainer.classList.remove('hidden');
+        el.sidebarDocsListContainer.classList.add('hidden');
+        renderWorkspaceHistoryList();
+      }
+    }
+
+    function switchMainTab(tab) {
+      if (tab === 'reader') {
+        el.tabReaderBtn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 flex items-center space-x-1.5";
+        el.tabWorkspaceBtn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 flex items-center space-x-1.5";
+        el.readerViewPanel.classList.remove('hidden');
+        el.transformationWorkspacePanel.classList.add('hidden');
+      } else {
+        el.tabWorkspaceBtn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 flex items-center space-x-1.5";
+        el.tabReaderBtn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 flex items-center space-x-1.5";
+        el.transformationWorkspacePanel.classList.remove('hidden');
+        el.readerViewPanel.classList.add('hidden');
+      }
+    }
+
+    // Helper to generate dynamic file selection dropdown markup for tools
+    function generateDocumentSelectorMarkup(elementId) {
+      if (state.documents.length === 0) {
+        return `<p class="text-[11px] text-red-500">No documents imported yet.</p>`;
+      }
+      return `
+        <div>
+          <label class="block text-xs font-bold text-slate-400 mb-1">Select Study Source File</label>
+          <select id="${elementId}" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none">
+            ${state.documents.map(d => `<option value="${d.id}" ${d.id === state.activeDocId ? 'selected' : ''}>${escapeHTML(d.name)}</option>`).join('')}
+          </select>
+        </div>
+      `;
+    }
+
+    // --- MOBILE OVERLAYS TOGGLING ---
+    function toggleMobileSidebar() {
+      const isHidden = el.leftSidebar.classList.contains('-translate-x-full');
+      closeAllMobilePanels();
+      if (isHidden) {
+        el.leftSidebar.classList.remove('-translate-x-full');
+        el.leftSidebar.classList.add('translate-x-0');
+        el.backdropOverlay.classList.remove('hidden');
+      }
+    }
+
+    function toggleMobileChat() {
+      const isHidden = el.rightChatPanel.classList.contains('translate-x-full');
+      closeAllMobilePanels();
+      if (isHidden) {
+        el.rightChatPanel.classList.remove('translate-x-full');
+        el.rightChatPanel.classList.add('translate-x-0');
+        el.backdropOverlay.classList.remove('hidden');
+      }
+    }
+
+    function closeAllMobilePanels() {
+      el.leftSidebar.classList.add('-translate-x-full');
+      el.leftSidebar.classList.remove('translate-x-0');
+      el.rightChatPanel.classList.add('translate-x-full');
+      el.rightChatPanel.classList.remove('translate-x-0');
+      el.backdropOverlay.classList.add('hidden');
+    }
+
+    // --- GEMINI REST API INTEGRATION ---
+    async function verifyAndConnectApiKey(key) {
+      el.connectBtn.disabled = true;
+      el.connectBtn.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white/30 border-t-white animate-spin rounded-full"></div>`;
+
+      try {
+        state.resolvedModel = null;
+        const testPrompt = "Test model connection. Reply only with 'OK'.";
+        const res = await callGeminiAPI(key, testPrompt, []);
+        
+        if (res && res.toLowerCase().includes('ok')) {
+          state.apiKey = key;
+          state.connected = true;
+          localStorage.setItem('gemini_api_key', key);
+          updateGlowStatus(true);
+          showToast(`Verified via ${state.resolvedModel}!`, 'success');
+        } else {
+          throw new Error("Invalid response pattern.");
+        }
+      } catch (err) {
+        state.connected = false;
+        updateGlowStatus(false);
+        showToast("Key verification failed.", "error");
+        console.error(err);
+      } finally {
+        el.connectBtn.disabled = false;
+        el.connectBtn.innerHTML = `<span>Connect</span>`;
+      }
+    }
+
+    function updateGlowStatus(isConnected) {
+      if (isConnected) {
+        el.statusGlow.className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-glow-green";
+        el.statusText.textContent = "Connected";
+        el.statusText.className = "text-xs font-medium text-green-600 dark:text-green-400";
+      } else {
+        el.statusGlow.className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-glow-red animate-pulse";
+        el.statusText.textContent = "Disconnected";
+        el.statusText.className = "text-xs font-medium text-red-500";
+      }
+    }
+
+    async function callGeminiAPI(key, systemPrompt, conversationContext, retriesLeft = 5, delay = 1000) {
+      const modelsToTry = state.resolvedModel 
+        ? [state.resolvedModel] 
+        : ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.5-flash-preview-09-2025'];
+
+      let lastError = null;
+
+      for (const model of modelsToTry) {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+        const payloadContents = [];
+
+        conversationContext.forEach(msg => {
+          payloadContents.push({
+            role: msg.role === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.text }]
+          });
+        });
+
+        payloadContents.push({
+          role: 'user',
+          parts: [{ text: systemPrompt }]
+        });
+
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: payloadContents })
+          });
+
+          if (!response.ok) {
+            const errorDetails = await response.json();
+            const errMsg = errorDetails?.error?.message || '';
+            if (response.status === 404 || errMsg.toLowerCase().includes('not found') || errMsg.toLowerCase().includes('unsupported')) {
+              lastError = new Error(errMsg || `Model ${model} missing`);
+              continue; 
+            }
+            throw new Error(errMsg || `HTTP Status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const extractedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          
+          if (!extractedText) throw new Error("Empty candidate parts response.");
+          state.resolvedModel = model;
+          return extractedText;
+
+        } catch (err) {
+          lastError = err;
+          if (state.resolvedModel) break;
+        }
+      }
+
+      if (retriesLeft > 0 && lastError && !lastError.message.toLowerCase().includes('not found')) {
+        await new Promise(r => setTimeout(r, delay));
+        return callGeminiAPI(key, systemPrompt, conversationContext, retriesLeft - 1, delay * 2);
+      }
+
+      throw lastError || new Error("Failed to communicate with API endpoints.");
+    }
+
+    // --- PDF PARSING ENGINE ---
+    async function handleFileSelection(files) {
+      let count = 0;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.type !== "application/pdf") {
+          showToast(`Ignoring non-PDF file: ${file.name}`, "error");
+          continue;
+        }
+
+        const docId = 'doc_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+        const fileObj = {
+          id: docId,
+          name: file.name,
+          size: formatFileSize(file.size),
+          pages: [],
+          contentText: '',
+          status: 'loading'
+        };
+
+        addFileToSidebarUI(fileObj);
+
+        try {
+          const arrayBuffer = await readFileAsArrayBuffer(file);
+          fileObj.rawBytes = arrayBuffer;
+          
+          const parsedPages = await extractTextFromPDF(arrayBuffer, (percent) => {
+            updateSidebarFileProgressUI(docId, percent);
+          });
+
+          fileObj.pages = parsedPages;
+          fileObj.contentText = parsedPages.map(p => p.text).join('\n');
+          fileObj.status = 'ready';
+
+          state.documents.push(fileObj);
+          updateSidebarFileSuccessUI(fileObj);
+          count++;
+        } catch (err) {
+          console.error(err);
+          updateSidebarFileFailedUI(docId);
+          showToast(`Unable to process PDF: ${file.name}`, 'error');
+        }
+      }
+
+      if (count > 0) {
+        showToast(`Imported ${count} research files to local workspace!`, 'success');
+        updateOverallLibraryStats();
+        
+        if (!state.activeDocId && state.documents.length > 0) {
+          setActiveDocument(state.documents[state.documents.length - 1].id);
+        }
+      }
+    }
+
+    function readFileAsArrayBuffer(file) {
+      return new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res(reader.result);
+        reader.onerror = () => rej(reader.error);
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    async function extractTextFromPDF(arrayBuffer, onProgress) {
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const numPages = pdf.numPages;
+      const pagesData = [];
+
+      for (let i = 1; i <= numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        
+        let pageText = '';
+        let lastY = -1;
+        for (let item of textContent.items) {
+          if (lastY !== -1 && Math.abs(item.transform[5] - lastY) > 5) {
+            pageText += '\n';
+          }
+          pageText += item.str + ' ';
+          lastY = item.transform[5];
+        }
+
+        pagesData.push({ pageNum: i, text: pageText.trim() });
+        if (onProgress) onProgress(Math.round((i / numPages) * 100));
+      }
+      return pagesData;
+    }
+
+    // --- SIDEBAR DOM UPDATERS ---
+    function addFileToSidebarUI(fileObj) {
+      el.sidebarEmpty.classList.add('hidden');
+      const fileDiv = document.createElement('div');
+      fileDiv.id = `sidebar-doc-${fileObj.id}`;
+      fileDiv.className = "p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl cursor-pointer hover:shadow-md transition-all relative flex flex-col justify-between";
+      
+      fileDiv.innerHTML = `
+        <div class="flex items-start space-x-2.5">
+          <div class="p-2 bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 rounded-lg shrink-0" id="icon-container-${fileObj.id}">
+            <div class="w-4 h-4 border-2 border-blue-600/30 border-t-blue-600 animate-spin rounded-full"></div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate" title="${fileObj.name}">
+              ${fileObj.name}
+            </h4>
+            <div class="flex items-center space-x-1.5 mt-0.5 text-[10px] text-slate-400">
+              <span id="progress-text-${fileObj.id}">Parsing: 0%</span>
+              <span>•</span>
+              <span>${fileObj.size}</span>
+            </div>
+          </div>
+          <button 
+            class="text-slate-400 hover:text-red-500 p-1 rounded transition-colors absolute top-2 right-2 z-10"
+            onclick="deleteDocument('${fileObj.id}', event)"
+            title="Delete Document"
+          >
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+        <div class="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mt-2 overflow-hidden">
+          <div id="progress-bar-${fileObj.id}" class="bg-blue-600 h-full w-0 transition-all duration-150"></div>
+        </div>
+      `;
+
+      el.fileList.prepend(fileDiv);
+      lucide.createIcons();
+    }
+
+    function updateSidebarFileProgressUI(docId, percent) {
+      const progressText = document.getElementById(`progress-text-${docId}`);
+      const progressBar = document.getElementById(`progress-bar-${docId}`);
+      if (progressText) progressText.textContent = `Parsing: ${percent}%`;
+      if (progressBar) progressBar.style.width = `${percent}%`;
+    }
+
+    function updateSidebarFileSuccessUI(fileObj) {
+      const parentCard = document.getElementById(`sidebar-doc-${fileObj.id}`);
+      if (!parentCard) return;
+
+      const iconCont = document.getElementById('icon-container-' + fileObj.id);
+      if (iconCont) {
+        iconCont.className = "p-2 bg-green-50 text-green-600 dark:bg-green-950/40 dark:text-green-400 rounded-lg shrink-0";
+        iconCont.innerHTML = `<i data-lucide="file-check" class="w-4 h-4"></i>`;
+      }
+
+      const progressText = document.getElementById(`progress-text-${fileObj.id}`);
+      if (progressText) progressText.textContent = `Ready (${fileObj.pages.length} pgs)`;
+
+      parentCard.onclick = () => setActiveDocument(fileObj.id);
+      lucide.createIcons();
+    }
+
+    function updateSidebarFileFailedUI(docId) {
+      const parentCard = document.getElementById(`sidebar-doc-${docId}`);
+      if (!parentCard) return;
+
+      const iconCont = document.getElementById(`icon-container-${docId}`);
+      if (iconCont) {
+        iconCont.className = "p-2 bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 rounded-lg shrink-0";
+        iconCont.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4"></i>`;
+      }
+      const progressText = document.getElementById(`progress-text-${docId}`);
+      if (progressText) progressText.textContent = `Failed`;
+    }
+
+    function updateOverallLibraryStats() {
+      const len = state.documents.length;
+      el.docCounter.textContent = `${len} Item${len === 1 ? '' : 's'}`;
+      
+      const totalChars = state.documents.reduce((acc, c) => acc + c.contentText.length, 0);
+      el.ragStatusText.textContent = `${len} document${len === 1 ? '' : 's'} indexed in workspace`;
+      el.ragTotalChars.textContent = `${formatNumber(totalChars)} chars`;
+
+      if (len === 0) {
+        el.sidebarEmpty.classList.remove('hidden');
+      } else {
+        el.sidebarEmpty.classList.add('hidden');
+      }
+    }
+
+    function deleteDocument(docId, event) {
+      if (event) event.stopPropagation();
+      state.documents = state.documents.filter(d => d.id !== docId);
+      const elem = document.getElementById(`sidebar-doc-${docId}`);
+      if (elem) elem.remove();
+
+      if (state.activeDocId === docId) {
+        state.activeDocId = null;
+        state.pdfDocumentProxy = null;
+        resetViewerState();
+      }
+
+      showToast("Document deleted.", "info");
+      updateOverallLibraryStats();
+    }
+
+    // --- READER VIEWER RENDER LOGIC ---
+    async function setActiveDocument(docId, targetPage = 1) {
+      const docObj = state.documents.find(d => d.id === docId);
+      if (!docObj) return;
+
+      document.querySelectorAll('[id^="sidebar-doc-"]').forEach(item => {
+        item.classList.remove('active-file-item', 'border-blue-600', 'bg-blue-50/20', 'dark:bg-slate-800/40');
+      });
+      const act = document.getElementById(`sidebar-doc-${docId}`);
+      if (act) act.classList.add('active-file-item', 'bg-blue-50/20', 'dark:bg-slate-800/40');
+
+      state.activeDocId = docId;
+      state.currentPage = targetPage;
+      state.totalPageCount = docObj.pages.length;
+
+      el.activeViewerFilename.textContent = docObj.name;
+      el.totalPageCount.textContent = state.totalPageCount;
+      el.currentPageNum.textContent = state.currentPage;
+
+      el.readerEmpty.classList.add('hidden');
+      el.pdfCanvasContainer.classList.add('hidden');
+      el.readerLoading.classList.remove('hidden');
+      el.viewerControls.classList.remove('hidden');
+
+      try {
+        state.pdfDocumentProxy = await pdfjsLib.getDocument({ data: docObj.rawBytes }).promise;
+        await renderActivePdfPage();
+      } catch (err) {
+        console.error(err);
+        showToast("Rendering preview error.", "error");
+        resetViewerState();
+      } finally {
+        el.readerLoading.classList.add('hidden');
+      }
+      closeAllMobilePanels();
+    }
+
+    function resetViewerState() {
+      el.activeViewerFilename.textContent = "No document loaded";
+      el.viewerControls.classList.add('hidden');
+      el.pdfCanvasContainer.classList.add('hidden');
+      el.readerLoading.classList.add('hidden');
+      el.readerEmpty.classList.remove('hidden');
+    }
+
+    async function renderActivePdfPage() {
+      if (!state.pdfDocumentProxy) return;
+      el.pdfCanvasContainer.innerHTML = '';
+      el.pdfCanvasContainer.classList.remove('hidden');
+
+      try {
+        const page = await state.pdfDocumentProxy.getPage(state.currentPage);
+        el.zoomPercentage.textContent = `${Math.round(state.zoomLevel * 100)}%`;
+        const scaledViewport = page.getViewport({ scale: state.zoomLevel });
+
+        const pageWrapper = document.createElement('div');
+        pageWrapper.className = "pdf-page-wrapper theme-transition mb-4 bg-white p-1 select-text relative";
+
+        const canvas = document.createElement('canvas');
+        canvas.className = "block max-w-full";
+        const ctx = canvas.getContext('2d');
+        canvas.height = scaledViewport.height;
+        canvas.width = scaledViewport.width;
+
+        pageWrapper.appendChild(canvas);
+        el.pdfCanvasContainer.appendChild(pageWrapper);
+
+        await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function changePdfPage(pageNum) {
+      if (!state.pdfDocumentProxy) return;
+      if (pageNum < 1 || pageNum > state.totalPageCount) return;
+
+      state.currentPage = pageNum;
+      el.currentPageNum.textContent = pageNum;
+      el.pdfScrollViewport.scrollTo({ top: 0, behavior: 'smooth' });
+      renderActivePdfPage();
+    }
+
+    // Correct zoom implementation
+    function changeZoom(factor) {
+      const z = Math.min(Math.max(state.zoomLevel + factor, 0.4), 3.0);
+      if (z !== state.zoomLevel) {
+        state.zoomLevel = z;
+        renderActivePdfPage();
+      }
+    }
+
+    function fitPdfToViewportWidth() {
+      if (!state.pdfDocumentProxy) return;
+      state.pdfDocumentProxy.getPage(state.currentPage).then(page => {
+        const containerWidth = el.pdfScrollViewport.clientWidth - 48;
+        const rawViewport = page.getViewport({ scale: 1.0 });
+        state.zoomLevel = Math.round((containerWidth / rawViewport.width) * 10) / 10;
+        renderActivePdfPage();
+      });
+    }
+
+    // --- KNOWLEDGE WORKSPACE CORE & GRID LOADER ---
+    function loadWorkspaceGrid() {
+      el.toolsGrid.innerHTML = '';
+      const activeTools = workspaceTools[state.activeMode];
+      
+      if (state.activeMode === 'school') {
+        el.workspaceTitle.textContent = "Study Transformation Hub";
+        el.workspaceSubtitle.textContent = "Synthesize and convert academic papers and notes into flashcards, revision guides, slide decks, and mind maps.";
+      } else {
+        el.workspaceTitle.textContent = "Business Output Engine";
+        el.workspaceSubtitle.textContent = "Transform corporate reports, sheets, and finance documentation into trend charts, spreadsheets, presentations, and invoices.";
+      }
+
+      activeTools.forEach(tool => {
+        const card = document.createElement('div');
+        card.className = `p-5 bg-white dark:bg-slate-900 border ${tool.color} rounded-2xl hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col justify-between group`;
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl group-hover:scale-105 transition-transform duration-200">
+                <i data-lucide="${tool.icon}" class="w-5 h-5"></i>
+              </div>
+              <span class="text-[9px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full uppercase tracking-wider">Workspace Tool</span>
+            </div>
+            <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${tool.title}</h3>
+            <p class="text-xs text-slate-500 mt-2 leading-relaxed">${tool.desc}</p>
+          </div>
+          <div class="mt-6 flex items-center justify-end text-xs font-semibold text-blue-600 dark:text-blue-400 gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+            <span>Launch Workstation</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </div>
+        `;
+        card.addEventListener('click', () => launchWorkspaceTool(tool.id));
+        el.toolsGrid.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    // --- TRANSFORMATION WORKSPACE CONTROLLER ---
+    let activeToolState = {};
+
+    function launchWorkspaceTool(toolId) {
+      if (state.documents.length === 0) {
+        showToast("Please upload at least one PDF file before launching workspace transformation tools.", "error");
+        return;
+      }
+      if (!state.connected) {
+        showToast("Gemini connection required. Enter API Key in header.", "error");
+        return;
+      }
+
+      // Configure Active Playground Header
+      const toolData = [...workspaceTools.school, ...workspaceTools.business].find(t => t.id === toolId);
+      el.activeToolTitle.textContent = toolData.title;
+      
+      // Toggle Workspace state view
+      el.workspaceLanding.classList.add('hidden');
+      el.workspaceActivePlayground.classList.remove('hidden');
+
+      // Set global playground action buttons configuration
+      el.playgroundGlobalActions.innerHTML = '';
+      
+      // Inject Workspace layout container & start UI states
+      setupPlaygroundTemplate(toolId);
+    }
+
+    // Layout configuration templates mapping
+    function setupPlaygroundTemplate(toolId) {
+      const container = el.playgroundContentContainer;
+      container.innerHTML = '';
+
+      switch (toolId) {
+        case 'school_flashcards':
+          container.innerHTML = `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              <div class="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm h-fit">
+                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200">Flashcard Engine Config</h3>
+                <div class="space-y-3">
+                  ${generateDocumentSelectorMarkup('fc-doc-select')}
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Target Topic</label>
+                    <input type="text" id="fc-topic" placeholder="e.g. Mitochondria, Transformers" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none focus:ring-1 focus:ring-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Difficulty level</label>
+                    <select id="fc-diff" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none">
+                      <option value="easy">Easy Concept Definitions</option>
+                      <option value="medium" selected>Medium Comprehension</option>
+                      <option value="hard">Advanced Assessment Questions</option>
+                    </select>
+                  </div>
+                  <button id="generate-fc-btn" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+                    <i data-lucide="zap" class="w-4 h-4"></i>
+                    <span>Generate Flashcards</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Deck viewer -->
+              <div class="lg:col-span-2 flex flex-col justify-between min-h-[400px] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 bg-white dark:bg-slate-900 shadow-sm relative">
+                <div id="fc-viewer-empty" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+                  <i data-lucide="layers" class="w-10 h-10 mb-2 stroke-1 opacity-60"></i>
+                  <p class="text-xs">No active study flashcards compiled.</p>
+                </div>
+
+                <div id="fc-active-view" class="hidden flex-1 flex flex-col justify-between">
+                  <!-- Flashcard layout -->
+                  <div class="flex-1 flex items-center justify-center py-6">
+                    <div id="flashcard-body" class="w-full max-w-md aspect-[1.6] bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center p-6 cursor-pointer hover:shadow-md transition-all">
+                      <p id="fc-card-direction" class="text-[9px] uppercase tracking-wider font-bold text-slate-400 mb-4">Question (Click to flip)</p>
+                      <h4 id="fc-card-content" class="text-sm font-semibold text-slate-700 dark:text-slate-200 leading-relaxed">Mitachondria function summary</h4>
+                      <p id="fc-card-hint" class="text-[11px] text-blue-500 italic mt-4 font-medium"></p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4">
+                    <span id="fc-counter-label" class="text-xs text-slate-400">Card 1 of 5</span>
+                    <div class="flex space-x-2">
+                      <button id="fc-prev" class="p-2 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-400"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                      <button id="fc-next" class="p-2 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-400"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          document.getElementById('generate-fc-btn').onclick = () => {
+            triggerSafeguardValidation('Flashcards Tool Compilation', () => generateFlashcardsAction());
+          };
+          break;
+
+        case 'school_questions':
+          container.innerHTML = `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              <div class="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm h-fit">
+                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200">Revisions Guide Config</h3>
+                <div class="space-y-3">
+                  ${generateDocumentSelectorMarkup('q-doc-select')}
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Question Style Target</label>
+                    <select id="q-style" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none">
+                      <option value="mcq">Multiple Choice Questions (MCQ)</option>
+                      <option value="short">Short Definitions Review</option>
+                      <option value="long">Long Essay Formulation</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Target Grade Level</label>
+                    <select id="q-level" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none">
+                      <option value="school">High School Revision</option>
+                      <option value="university" selected>University Level Assessment</option>
+                      <option value="research">Research Level Challenge</option>
+                    </select>
+                  </div>
+                  <button id="generate-q-btn" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+                    <i data-lucide="help-circle" class="w-4 h-4"></i>
+                    <span>Generate Review Pack</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Question Feed Viewer -->
+              <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm min-h-[400px] flex flex-col justify-start">
+                <div id="q-viewer-empty" class="m-auto text-center text-slate-400">
+                  <i data-lucide="help-circle" class="w-10 h-10 mx-auto mb-2 stroke-1 opacity-60"></i>
+                  <p class="text-xs">No active exam assessments compiled yet.</p>
+                </div>
+                <div id="q-content-results" class="hidden space-y-6 flex-1 overflow-y-auto"></div>
+              </div>
+            </div>
+          `;
+          document.getElementById('generate-q-btn').onclick = () => {
+            triggerSafeguardValidation('Quiz Assessment Generator', () => generateQuestionsAction());
+          };
+          break;
+
+        case 'school_dictionary':
+          container.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm h-fit space-y-4">
+                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200">Word Meaning Context Analyzer</h3>
+                <div class="space-y-3">
+                  ${generateDocumentSelectorMarkup('dict-doc-select')}
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Enter Word or Term</label>
+                    <input type="text" id="dict-word" placeholder="e.g. Endocytosis, Backpropagation" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2.5 text-xs rounded-lg outline-none focus:ring-1 focus:ring-blue-500">
+                  </div>
+                  <button id="lookup-word-btn" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                    <span>Execute Context Comparative Analysis</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Dictionary Output View -->
+              <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between min-h-[300px]">
+                <div id="dict-empty" class="m-auto text-center text-slate-400">
+                  <i data-lucide="book" class="w-10 h-10 mx-auto mb-2 stroke-1 opacity-60"></i>
+                  <p class="text-xs">Enter a word to analyze its contextual meaning side-by-side.</p>
+                </div>
+                
+                <div id="dict-results" class="hidden flex-1 space-y-4 flex flex-col justify-start">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-blue-50/50 dark:bg-blue-950/20 p-4 border border-blue-100 dark:border-blue-900 rounded-xl">
+                      <h4 class="font-bold text-xs text-blue-700 dark:text-blue-400 uppercase tracking-wider mb-2">A) Document Context</h4>
+                      <p id="dict-doc-meaning" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed"></p>
+                    </div>
+                    <div class="bg-emerald-50/50 dark:bg-emerald-950/20 p-4 border border-emerald-100 dark:border-emerald-900 rounded-xl">
+                      <h4 class="font-bold text-xs text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-2">B) Global Definition</h4>
+                      <p id="dict-global-meaning" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed"></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          document.getElementById('lookup-word-btn').onclick = () => {
+            triggerSafeguardValidation('Side-by-Side Context Meaning Analysis', () => runWordLookupAction());
+          };
+          break;
+
+        case 'school_finder':
+          container.innerHTML = `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto h-full">
+              <div class="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm h-fit">
+                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200">Word Concordance Finder</h3>
+                <div class="space-y-3">
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Search Concept or Phrase</label>
+                    <input type="text" id="finder-term" placeholder="e.g. system design, energy" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none focus:ring-1 focus:ring-blue-500">
+                  </div>
+                  <button id="find-term-btn" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+                    <i data-lucide="search" class="w-4 h-4"></i>
+                    <span>Execute Core Scan</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Finder Outputs Container -->
+              <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm min-h-[400px] flex flex-col">
+                <div id="finder-empty" class="m-auto text-center text-slate-400">
+                  <i data-lucide="file-search" class="w-10 h-10 mx-auto mb-2 stroke-1 opacity-60"></i>
+                  <p class="text-xs">Enter a search term or concept to execute concordance index.</p>
+                </div>
+                
+                <div id="finder-results-box" class="hidden flex-1 flex flex-col justify-between">
+                  <!-- Match occurrences metrics -->
+                  <div class="grid grid-cols-3 gap-4 mb-4">
+                    <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 text-center">
+                      <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Occurrences Found</span>
+                      <h4 id="find-stat-occur" class="text-lg font-bold text-slate-800 dark:text-slate-100 mt-1">0</h4>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 text-center">
+                      <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Docs Affected</span>
+                      <h4 id="find-stat-docs" class="text-lg font-bold text-slate-800 dark:text-slate-100 mt-1">0</h4>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 text-center">
+                      <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Density Index</span>
+                      <h4 id="find-stat-pages" class="text-lg font-bold text-slate-800 dark:text-slate-100 mt-1">0</h4>
+                    </div>
+                  </div>
+
+                  <!-- Table list container -->
+                  <div id="finder-list-targets" class="flex-1 overflow-y-auto space-y-2 max-h-[250px]"></div>
+                </div>
+              </div>
+            </div>
+          `;
+          document.getElementById('find-term-btn').onclick = () => {
+            runFinderAction();
+          };
+          break;
+
+        case 'school_mindmap':
+          container.innerHTML = `
+            <div class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm min-h-[450px] flex flex-col justify-between relative">
+              <div class="absolute top-4 left-4 z-10 flex items-center space-x-2">
+                <button id="generate-mm-btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center space-x-1">
+                  <i data-lucide="git-branch" class="w-4 h-4"></i>
+                  <span>Compile Dynamic Mindmap</span>
+                </button>
+              </div>
+
+              <div id="mm-empty" class="m-auto text-center text-slate-400">
+                <i data-lucide="git-commit" class="w-10 h-10 mx-auto mb-2 stroke-1 opacity-60"></i>
+                <p class="text-xs">Compile to visualize interactive node hierarchies.</p>
+              </div>
+
+              <!-- Mindmap interactive SVG node frame -->
+              <div id="mm-canvas-container" class="hidden flex-1 flex items-center justify-center min-h-[350px]">
+                <svg id="mm-svg" class="w-full h-[380px] border border-slate-100 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-950 select-none"></svg>
+              </div>
+            </div>
+          `;
+          document.getElementById('generate-mm-btn').onclick = () => {
+            triggerSafeguardValidation('Dynamic Graphical Mind Map', () => generateMindmapAction());
+          };
+          break;
+
+        case 'school_slides':
+          container.innerHTML = `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              <div class="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm h-fit">
+                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200">Presentation Compiler</h3>
+                <div class="space-y-3">
+                  ${generateDocumentSelectorMarkup('slides-doc-select')}
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Focus Concept Theme</label>
+                    <input type="text" id="slide-concept" placeholder="e.g. Quantum Computing Basics" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none focus:ring-1 focus:ring-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Theme Stylesheet</label>
+                    <select id="slide-theme" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none">
+                      <option value="academic">Academic Professional Theme</option>
+                      <option value="minimalist" selected>Modern Minimalist</option>
+                      <option value="dark">Dark Scientific</option>
+                    </select>
+                  </div>
+                  <button id="generate-slide-btn" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+                    <i data-lucide="presentation" class="w-4 h-4"></i>
+                    <span>Compile Slides</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Slideshow display frame -->
+              <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm min-h-[400px] flex flex-col justify-between relative">
+                <div id="slide-empty" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+                  <i data-lucide="presentation" class="w-10 h-10 mb-2 stroke-1 opacity-60"></i>
+                  <p class="text-xs">No active compilation workspace loaded.</p>
+                </div>
+
+                <div id="slide-playground" class="hidden flex-1 flex flex-col justify-between">
+                  <!-- Active slide container -->
+                  <div id="slide-visual-card" class="border border-slate-150 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-2xl p-6 aspect-[1.6] flex flex-col justify-between text-slate-700 dark:text-slate-300">
+                    <h2 id="slide-card-header" class="font-bold text-sm text-blue-600 dark:text-blue-400 uppercase tracking-wider">Slide 1</h2>
+                    <div class="my-auto">
+                      <h3 id="slide-card-title" class="text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight mb-2">Workspace Slide Element</h3>
+                      <p id="slide-card-body" class="text-xs leading-relaxed text-slate-600 dark:text-slate-400">Sample active workspace bullet nodes represented.</p>
+                    </div>
+                    <p id="slide-card-footer" class="text-[10px] text-slate-400 italic font-medium"></p>
+                  </div>
+
+                  <!-- Slides workspace buttons footer -->
+                  <div class="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4 mt-4">
+                    <span id="slide-counter-label" class="text-xs text-slate-400">Slide 1 of 5</span>
+                    <div class="flex space-x-2">
+                      <button id="slide-prev" class="p-2 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-400"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                      <button id="slide-next" class="p-2 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-400"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          document.getElementById('generate-slide-btn').onclick = () => {
+            triggerSafeguardValidation('Presentation Compilation Build', () => generateSlidesAction());
+          };
+          break;
+
+        case 'business_trend':
+          container.innerHTML = `
+            <div class="space-y-6 max-w-5xl mx-auto">
+              <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h3 class="font-bold text-base text-slate-800 dark:text-slate-200">Corporate Trend & Risk Forecaster</h3>
+                  <p class="text-xs text-slate-500 mt-1">Run an executive contextual analysis across imported sheets or report metrics.</p>
+                </div>
+                <button id="run-trend-btn" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+                  <i data-lucide="trending-up" class="w-4 h-4"></i>
+                  <span>Execute Financial &amp; Operational Forecast</span>
+                </button>
+              </div>
+
+              <!-- Trend Visual output framework -->
+              <div id="trend-viewer" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                  <h4 class="font-bold text-xs text-slate-400 uppercase tracking-wider mb-4">Core Structural Trends Mapping</h4>
+                  <div class="h-64 flex items-center justify-center">
+                    <canvas id="trend-canvas"></canvas>
+                  </div>
+                </div>
+
+                <div class="md:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+                  <h4 class="font-bold text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">Operational Decisions Summary</h4>
+                  <div class="space-y-3" id="trend-bullets-container"></div>
+                </div>
+              </div>
+            </div>
+          `;
+          document.getElementById('run-trend-btn').onclick = () => {
+            triggerSafeguardValidation('Executive Trend Mapping Synthesis', () => generateTrendAnalysisAction());
+          };
+          break;
+
+        case 'business_deck':
+          container.innerHTML = `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              <div class="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm h-fit">
+                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200">Pitch Strategy Creator</h3>
+                <div class="space-y-3">
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Company Pitch Target</label>
+                    <input type="text" id="deck-org" placeholder="e.g. NextGen Cleantech, SaaS Tool" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none focus:ring-1 focus:ring-blue-500">
+                  </div>
+                  <button id="generate-deck-btn" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+                    <i data-lucide="award" class="w-4 h-4"></i>
+                    <span>Compile Strategic Pitch</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Deck rendering canvas -->
+              <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm min-h-[400px] flex flex-col justify-between relative">
+                <div id="deck-empty" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+                  <i data-lucide="presentation" class="w-10 h-10 mb-2 stroke-1 opacity-60"></i>
+                  <p class="text-xs">Compile to visualize strategic pitch blocks.</p>
+                </div>
+
+                <div id="deck-playground" class="hidden flex-1 flex flex-col justify-between bg-white dark:bg-slate-900">
+                  <div class="border border-slate-150 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-2xl p-6 aspect-[1.6] flex flex-col justify-between text-slate-700 dark:text-slate-300">
+                    <h2 id="deck-card-header" class="font-bold text-xs text-rose-600 uppercase tracking-wider">Slide Element</h2>
+                    <div class="my-auto">
+                      <h3 id="deck-card-title" class="text-base font-bold text-slate-800 dark:text-slate-100 leading-tight mb-2">Corporate Strategy Block</h3>
+                      <p id="deck-card-body" class="text-xs leading-relaxed text-slate-600 dark:text-slate-400">Details mapped natively from corporate synthesis metrics.</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4 mt-4">
+                    <span id="deck-counter-label" class="text-xs text-slate-400">Slide 1 of 5</span>
+                    <div class="flex space-x-2">
+                      <button id="deck-prev" class="p-2 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-400"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                      <button id="deck-next" class="p-2 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-400"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          document.getElementById('generate-deck-btn').onclick = () => {
+            triggerSafeguardValidation('Corporate Investor Pitch Synthesis', () => generateBusinessDeckAction());
+          };
+          break;
+
+        case 'business_charts':
+          container.innerHTML = `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              <div class="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm h-fit">
+                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200">Analytical Chart Modeler</h3>
+                <div class="space-y-3 text-xs">
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">X-Axis Labels (comma separated)</label>
+                    <input type="text" id="chart-lbls" value="Q1, Q2, Q3, Q4" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Y-Axis Data Values (comma separated)</label>
+                    <input type="text" id="chart-vals" value="120, 190, 300, 500" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Chart Representation Style</label>
+                    <select id="chart-style-sel" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none">
+                      <option value="line">Trend Line Graph</option>
+                      <option value="bar" selected>Comparison Bar Chart</option>
+                      <option value="pie">Distribution Pie Chart</option>
+                    </select>
+                  </div>
+                  <button id="render-custom-chart" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                    <span>Execute Chart Model Render</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Canvas display area -->
+              <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm min-h-[400px] flex flex-col justify-center">
+                <div class="h-64 flex items-center justify-center">
+                  <canvas id="custom-model-canvas"></canvas>
+                </div>
+              </div>
+            </div>
+          `;
+          document.getElementById('render-custom-chart').onclick = () => {
+            renderCustomChartAction();
+          };
+          break;
+
+        case 'business_sheets':
+          container.innerHTML = `
+            <div class="space-y-6 max-w-5xl mx-auto">
+              <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h3 class="font-bold text-base text-slate-800 dark:text-slate-200">Data Extraction Spreadsheet Engine</h3>
+                  <p class="text-xs text-slate-500 mt-1">Identifies lists, numeric arrays, or comparative text matrix parameters to build client-side editable worksheets.</p>
+                </div>
+                <button id="run-sheets-btn" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+                  <i data-lucide="table" class="w-4 h-4"></i>
+                  <span>Compile Matrix Sheet</span>
+                </button>
+              </div>
+
+              <!-- Spreadsheet Workspace display -->
+              <div id="sheets-workspace" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm overflow-x-auto min-h-[300px]">
+                <table class="w-full text-xs text-left text-slate-600 dark:text-slate-400 border-collapse" id="workspace-excel-table"></table>
+              </div>
+            </div>
+          `;
+          document.getElementById('run-sheets-btn').onclick = () => {
+            triggerSafeguardValidation('Tabular Spreadsheet Matrix Build', () => generateSpreadsheetAction());
+          };
+          break;
+
+        case 'business_invoice':
+          container.innerHTML = `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              <div class="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm h-fit">
+                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200">Interactive Billing Engine</h3>
+                <div class="space-y-3 text-xs">
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Company Brand Entity</label>
+                    <input type="text" id="inv-entity" value="Acme Consulting Ltd" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Billing Client Partner</label>
+                    <input type="text" id="inv-client" value="Strategic Partners Inc" class="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs rounded-lg outline-none">
+                  </div>
+                  <button id="generate-invoice-btn" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    <span>Compile Invoice Matrix</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Invoice Visual Page -->
+              <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-md min-h-[450px] flex flex-col justify-between text-slate-700 dark:text-slate-300" id="invoice-bill-canvas">
+                <div id="invoice-empty" class="m-auto text-center text-slate-400">
+                  <i data-lucide="file-spreadsheet" class="w-10 h-10 mx-auto mb-2 stroke-1 opacity-60"></i>
+                  <p class="text-xs">Compile data parameters to render active billing ledger sheet.</p>
+                </div>
+
+                <div id="invoice-workspace" class="hidden flex-1 space-y-6 flex flex-col justify-between">
+                  <div class="flex justify-between items-start border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div>
+                      <h4 id="inv-out-sender" class="font-bold text-slate-800 dark:text-slate-100 text-sm">Acme Corporation</h4>
+                      <p class="text-[10px] text-slate-400">Strategic Research Operations</p>
+                    </div>
+                    <div class="text-right">
+                      <h4 class="font-bold text-slate-500 uppercase tracking-wider text-[10px]">Tax Invoice</h4>
+                      <p id="inv-out-num" class="text-xs text-slate-600 dark:text-slate-300 font-semibold mt-1">#INV-9081</p>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Bill To:</span>
+                      <p id="inv-out-client" class="font-semibold text-slate-700 dark:text-slate-300">Strategic Partner Entity</p>
+                    </div>
+                    <div class="text-right">
+                      <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Issue Date:</span>
+                      <p class="text-slate-600 dark:text-slate-300">June 25, 2026</p>
+                    </div>
+                  </div>
+
+                  <div class="flex-1 mt-4">
+                    <table class="w-full text-xs text-left" id="invoice-items-table"></table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          document.getElementById('generate-invoice-btn').onclick = () => {
+            triggerSafeguardValidation('Financial Invoice Billing Compile', () => generateInvoiceAction());
+          };
+          break;
+      }
+
+      // Re-trigger icons refresh on dynamic DOM compilation
+      lucide.createIcons();
+    }
+
+    // --- DIALOG CONTROL FUNCTIONS ---
+    let pendingValidationCallback = null;
+
+    function triggerSafeguardValidation(taskLabel, onApproveCallback) {
+      pendingValidationCallback = onApproveCallback;
+      
+      // Update visual labels with context metrics in modal
+      const activeDocName = state.activeDocId 
+        ? state.documents.find(d => d.id === state.activeDocId)?.name 
+        : "all loaded documents";
+      
+      el.verifyDataSource.textContent = `Analyzing text metrics extracted natively from "${activeDocName}".`;
+      el.verifyConfidence.textContent = `96% High RAG Match (Based on ${state.documents.length} sources)`;
+      
+      // Toggle display
+      el.verificationModal.classList.remove('hidden');
+    }
+
+    function closeVerificationModal() {
+      el.verificationModal.classList.add('hidden');
+      pendingValidationCallback = null;
+    }
+
+    // Action button inside validation confirmation
+    document.getElementById('confirm-verify-btn').onclick = () => {
+      if (pendingValidationCallback) {
+        pendingValidationCallback();
+      }
+      closeVerificationModal();
+    };
+
+    // --- WORKSPACE PLAYGROUND EXPORTS & HISTORY STORAGE ---
+    function addToWorkspaceHistory(title, type, content) {
+      const historyItem = {
+        id: 'hist_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        title: title,
+        type: type,
+        content: content,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      state.workspaceHistory.push(historyItem);
+      showToast(`Saved "${title}" file to Workspace History.`, "success");
+      
+      // Re-render sidebar elements
+      renderWorkspaceHistoryList();
+    }
+
+    function renderWorkspaceHistoryList() {
+      const parent = el.historyItemsList;
+      parent.innerHTML = '';
+
+      if (state.workspaceHistory.length === 0) {
+        parent.innerHTML = `
+          <div class="text-center py-8 text-slate-400">
+            <i data-lucide="history" class="w-8 h-8 mx-auto mb-2 stroke-1 opacity-50"></i>
+            <p class="text-xs">No generated files in workspace history yet.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      state.workspaceHistory.slice().reverse().forEach(item => {
+        const row = document.createElement('div');
+        row.className = "p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-md transition-all flex items-center justify-between";
+        row.innerHTML = `
+          <div class="flex items-center space-x-2.5 min-w-0">
+            <div class="p-2 bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 rounded-lg shrink-0">
+              <i data-lucide="file-text" class="w-4 h-4"></i>
+            </div>
+            <div class="min-w-0">
+              <h5 class="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate" title="${item.title}">${item.title}</h5>
+              <span class="text-[9px] text-slate-400 block">${item.type.toUpperCase()} • ${item.timestamp}</span>
+            </div>
+          </div>
+          <button class="p-1 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors shrink-0" onclick="downloadHistoryItemContent('${item.id}')">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          </button>
+        `;
+        parent.appendChild(row);
+      });
+      lucide.createIcons();
+    }
+
+    function downloadHistoryItemContent(id) {
+      const item = state.workspaceHistory.find(h => h.id === id);
+      if (!item) return;
+
+      const blob = new Blob([item.content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${item.title.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Exported: ${item.title}`, "success");
+    }
+
+    // Agentic feature: post updates about current task execution into chat feed
+    function postAgenticStatusUpdate(actionTitle, detailText) {
+      const statusWrap = document.createElement('div');
+      statusWrap.className = "flex items-start space-x-3 msg-agent-update bg-blue-50/50 dark:bg-blue-950/10 p-3 rounded-xl border border-blue-100/50 dark:border-blue-900/20";
+      statusWrap.innerHTML = `
+        <div class="p-1.5 bg-blue-600 text-white rounded-lg shrink-0">
+          <i data-lucide="activity" class="w-3.5 h-3.5 animate-pulse"></i>
+        </div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-400 flex-1 leading-relaxed">
+          <span class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block text-[9px] mb-0.5">Workspace Agent Update</span>
+          <p>Running: <strong>${escapeHTML(actionTitle)}</strong></p>
+          <p class="mt-0.5">${escapeHTML(detailText)}</p>
+        </div>
+      `;
+      el.chatFeed.appendChild(statusWrap);
+      lucide.createIcons();
+      el.chatFeed.scrollTo({ top: el.chatFeed.scrollHeight, behavior: 'smooth' });
+    }
+
+    // --- SCHOOL MODE ACTION ALGORITHMS ---
+
+    async function generateFlashcardsAction() {
+      const docId = document.getElementById('fc-doc-select')?.value;
+      const topicInput = document.getElementById('fc-topic').value.trim();
+      const diffInput = document.getElementById('fc-diff').value;
+      const doc = state.documents.find(d => d.id === docId) || state.documents[0];
+
+      if (!doc) {
+        showToast("No active document selected for flashcards synthesis.", "error");
+        return;
+      }
+      showToast("Compiling study deck structure. Initiating AI verification...", "info");
+      postAgenticStatusUpdate("Flashcard Compiler Engine", `Analyzing textbook/resource segments of "${doc.name}" for "${topicInput || 'Key Concepts'}".`);
+
+      const systemPrompt = `
+Generate EXACTLY 5 flashcards from the text in the selected document. 
+The topic user wants is "${topicInput || 'important concepts'}" at a difficulty level of "${diffInput}".
+Provide safe, age-appropriate, clean, and healthy responses.
+Analyze document and output EXACTLY a valid JSON array matching this strict schema:
+[
+  { "front": "A precise key conceptual question about the topic", "back": "A crisp, detailed accurate answer", "hint": "A helpful small revision clue" }
+]
+Do not return any markdown tags or backticks around the json. Only return the raw json string list.
+
+DOCUMENT CONTENT EXTRACT:
+${doc.contentText.substring(0, 8000)}
+`;
+
+      try {
+        const textResponse = await callGeminiAPI(state.apiKey, systemPrompt, []);
+        const sanitized = textResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const jsonArray = JSON.parse(sanitized);
+
+        if (Array.isArray(jsonArray)) {
+          activeToolState = {
+            cards: jsonArray,
+            activeIndex: 0,
+            showFront: true
+          };
+
+          // Render first card elements
+          document.getElementById('fc-viewer-empty').classList.add('hidden');
+          document.getElementById('fc-active-view').classList.remove('hidden');
+
+          renderActivePlaygroundFlashcard();
+          setupFlashcardInteractivity();
+
+          // Save to export center
+          addToWorkspaceHistory(`${topicInput || 'Study'} Revision Deck`, 'cards', JSON.stringify(jsonArray, null, 2));
+          postAgenticStatusUpdate("Flashcard Generation Completed", `Successfully saved study cards to workspace history list.`);
+
+        } else {
+          throw new Error("Parsed data list is not an Array.");
+        }
+      } catch (err) {
+        console.error(err);
+        showToast("Error synthesizing deck properties. Check prompt keywords.", "error");
+      }
+    }
+
+    function renderActivePlaygroundFlashcard() {
+      const card = activeToolState.cards[activeToolState.activeIndex];
+      const frontLabel = document.getElementById('fc-card-direction');
+      const content = document.getElementById('fc-card-content');
+      const hint = document.getElementById('fc-card-hint');
+      const counter = document.getElementById('fc-counter-label');
+
+      counter.textContent = `Card ${activeToolState.activeIndex + 1} of ${activeToolState.cards.length}`;
+
+      if (activeToolState.showFront) {
+        frontLabel.textContent = "Question (Click to flip)";
+        content.textContent = card.front;
+        hint.textContent = card.hint ? `Clue: ${card.hint}` : '';
+      } else {
+        frontLabel.textContent = "Correct Answer Explanation";
+        content.textContent = card.back;
+        hint.textContent = '';
+      }
+    }
+
+    function setupFlashcardInteractivity() {
+      document.getElementById('flashcard-body').onclick = () => {
+        activeToolState.showFront = !activeToolState.showFront;
+        renderActivePlaygroundFlashcard();
+      };
+      document.getElementById('fc-prev').onclick = () => {
+        if (activeToolState.activeIndex > 0) {
+          activeToolState.activeIndex--;
+          activeToolState.showFront = true;
+          renderActivePlaygroundFlashcard();
+        }
+      };
+      document.getElementById('fc-next').onclick = () => {
+        if (activeToolState.activeIndex < activeToolState.cards.length - 1) {
+          activeToolState.activeIndex++;
+          activeToolState.showFront = true;
+          renderActivePlaygroundFlashcard();
+        }
+      };
+    }
+
+    async function generateQuestionsAction() {
+      const docId = document.getElementById('q-doc-select')?.value;
+      const style = document.getElementById('q-style').value;
+      const level = document.getElementById('q-level').value;
+      const doc = state.documents.find(d => d.id === docId) || state.documents[0];
+
+      if (!doc) {
+        showToast("No active document selected for query synthesis.", "error");
+        return;
+      }
+      showToast("Compiling academic examination queries...", "info");
+      postAgenticStatusUpdate("Interactive Quiz Gen Engine", `Generating academic review parameters on "${doc.name}" with a style level of "${level}".`);
+
+      const systemPrompt = `
+Generate EXACTLY 3 exam review questions about the core concepts of this document using style: "${style}" at the level of "${level}".
+Provide safe, age-appropriate, clean, and healthy responses.
+Return output EXACTLY in a valid JSON array matching this strict schema:
+[
+  { "question": "Question text?", "choices": ["A) option", "B) option", "C) option", "D) option"], "answer": "The correct answer value or brief text", "explanation": "Detailed step-by-step reasoning", "citation": "Target cited section or page location details" }
+]
+Note: If style is 'short' or 'long', choices can be an empty list [].
+Do not return markdown tags. Only output the raw json string.
+
+DOCUMENT EXTRACT:
+${doc.contentText.substring(0, 8000)}
+`;
+
+      try {
+        const textResponse = await callGeminiAPI(state.apiKey, systemPrompt, []);
+        const sanitized = textResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const jsonArray = JSON.parse(sanitized);
+
+        if (Array.isArray(jsonArray)) {
+          const resultsCont = document.getElementById('q-content-results');
+          resultsCont.innerHTML = '';
+          
+          document.getElementById('q-viewer-empty').classList.add('hidden');
+          resultsCont.classList.remove('hidden');
+
+          jsonArray.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = "p-4 bg-slate-50 dark:bg-slate-950/40 rounded-xl border border-slate-100 dark:border-slate-800 space-y-2";
+            
+            let choicesHTML = '';
+            if (item.choices && item.choices.length > 0) {
+              choicesHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">${item.choices.map(c => `<div class="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-lg text-[11px]">${escapeHTML(c)}</div>`).join('')}</div>`;
+            }
+
+            div.innerHTML = `
+              <h4 class="font-bold text-xs text-blue-600 dark:text-blue-400">Question ${index + 1}</h4>
+              <p class="text-xs font-semibold text-slate-800 dark:text-slate-100 leading-relaxed">${escapeHTML(item.question)}</p>
+              ${choicesHTML}
+              <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1 bg-slate-100/50 dark:bg-slate-900/30 p-2.5 rounded-lg">
+                <span class="font-bold text-green-600 block mb-1">Answer Key: ${escapeHTML(item.answer)}</span>
+                <p><strong>Rationale:</strong> ${escapeHTML(item.explanation)}</p>
+                <p class="text-[9px] text-slate-400"><strong>Source Reference:</strong> ${escapeHTML(item.citation)}</p>
+              </div>
+            `;
+            resultsCont.appendChild(div);
+          });
+
+          addToWorkspaceHistory(`Assessment Revision Pack`, 'quiz', JSON.stringify(jsonArray, null, 2));
+          postAgenticStatusUpdate("Quiz Builder Actions Successful", `Completed revision deck extraction from ${doc.name}.`);
+
+        } else {
+          throw new Error("Structure error.");
+        }
+      } catch (err) {
+        console.error(err);
+        showToast("Error processing exam items.", "error");
+      }
+    }
+
+    async function runWordLookupAction() {
+      const docId = document.getElementById('dict-doc-select')?.value;
+      const word = document.getElementById('dict-word').value.trim();
+      if (!word) {
+        showToast("Please enter a term to search.", "error");
+        return;
+      }
+
+      showToast("Searching database. Extracting comparative semantic references...", "info");
+      const doc = state.documents.find(d => d.id === docId) || state.documents[0];
+      postAgenticStatusUpdate("Comparative Dictionary Scan", `Analyzing word semantic usage of "${word}" within "${doc ? doc.name : 'all files'}".`);
+
+      const systemPrompt = `
+You are analyzing the word/phrase: "${word}".
+Provide safe, age-appropriate, clean, and healthy responses.
+Provide side-by-side definition context. Return output EXACTLY in a valid JSON schema:
+{
+  "documentMeaning": "Explain how this term is specifically used and contextualized inside the document (limit 150 words).",
+  "globalMeaning": "Standard definition, dictionary parameters, real world analogies, and synonyms (limit 150 words)."
+}
+Do not return any markdown surrounding code tags.
+
+DOCUMENT EXTRACT:
+${doc ? doc.contentText.substring(0, 8000) : "No documents available."}
+`;
+
+      try {
+        const textResponse = await callGeminiAPI(state.apiKey, systemPrompt, []);
+        const sanitized = textResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const resObj = JSON.parse(sanitized);
+
+        document.getElementById('dict-empty').classList.add('hidden');
+        document.getElementById('dict-results').classList.remove('hidden');
+
+        document.getElementById('dict-doc-meaning').textContent = resObj.documentMeaning;
+        document.getElementById('dict-global-meaning').textContent = resObj.globalMeaning;
+
+        addToWorkspaceHistory(`Definition Comparative: ${word}`, 'term', JSON.stringify(resObj, null, 2));
+        postAgenticStatusUpdate("Definition comparative finished", `Completed analysis of term "${word}".`);
+
+      } catch (err) {
+        console.error(err);
+        showToast("Unable to complete comparison scan.", "error");
+      }
+    }
+
+    function runFinderAction() {
+      const term = document.getElementById('finder-term').value.trim();
+      if (!term) {
+        showToast("Enter a target search string.", "error");
+        return;
+      }
+
+      // Reset previous view state to prevent lingering output
+      const targetList = document.getElementById('finder-list-targets');
+      if (targetList) targetList.innerHTML = '';
+      document.getElementById('finder-results-box').classList.add('hidden');
+      document.getElementById('finder-empty').classList.remove('hidden');
+
+      showToast("Initiating concordance indexing scan...", "info");
+      postAgenticStatusUpdate("Concordance Word Scan", `Indexing term/concordance occurrences for term: "${term}" across library.`);
+      
+      const occurrences = [];
+      let totalMatches = 0;
+      let totalDocsAffected = new Set();
+
+      state.documents.forEach(doc => {
+        doc.pages.forEach(page => {
+          const lowerText = page.text.toLowerCase();
+          const lowerTerm = term.toLowerCase();
+          
+          if (lowerText.includes(lowerTerm)) {
+            totalDocsAffected.add(doc.id);
+            
+            // Extract snippet context
+            const matchIndex = lowerText.indexOf(lowerTerm);
+            const start = Math.max(0, matchIndex - 60);
+            const end = Math.min(page.text.length, matchIndex + term.length + 60);
+            const snippet = "..." + page.text.substring(start, end) + "...";
+
+            // Count occurrences count
+            const occurrencesOnPage = (lowerText.match(new RegExp(escapeRegExp(lowerTerm), 'g')) || []).length;
+            totalMatches += occurrencesOnPage;
+
+            occurrences.push({
+              docName: doc.name,
+              docId: doc.id,
+              pageNum: page.pageNum,
+              snippet: snippet,
+              count: occurrencesOnPage
+            });
+          }
+        });
+      });
+
+      if (occurrences.length === 0) {
+        showToast("Concordance: No matches found.", "info");
+        postAgenticStatusUpdate("Word Finder Completed", `No matches located for search parameter "${term}".`);
+        return;
+      }
+
+      // Populate interface metrics
+      document.getElementById('finder-empty').classList.add('hidden');
+      document.getElementById('finder-results-box').classList.remove('hidden');
+
+      document.getElementById('find-stat-occur').textContent = totalMatches;
+      document.getElementById('find-stat-docs').textContent = totalDocsAffected.size;
+      document.getElementById('find-stat-pages').textContent = occurrences.length;
+
+      occurrences.forEach(item => {
+        const itemRow = document.createElement('div');
+        itemRow.className = "p-3 bg-slate-50 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between hover:border-blue-500 cursor-pointer text-xs";
+        itemRow.innerHTML = `
+          <div class="min-w-0 flex-1 space-y-1">
+            <div class="flex items-center space-x-2 text-[10px] text-slate-400">
+              <span class="font-bold uppercase text-blue-600 dark:text-blue-400">${escapeHTML(item.docName)}</span>
+              <span>•</span>
+              <span>Page ${item.pageNum}</span>
+            </div>
+            <p class="text-slate-600 dark:text-slate-300 italic truncate">${escapeHTML(item.snippet)}</p>
+          </div>
+          <span class="ml-4 px-2.5 py-1 bg-slate-200 dark:bg-slate-800 rounded-full font-bold text-[10px] shrink-0 text-slate-700 dark:text-slate-300">${item.count} hits</span>
+        `;
+        
+        // Fixed: Use updated single-step asynchronous call to prevent PDF.js double-rendering race conditions
+        itemRow.onclick = () => {
+          setActiveDocument(item.docId, item.pageNum).then(() => {
+            switchMainTab('reader');
+          });
+        };
+        targetList.appendChild(itemRow);
+      });
+      postAgenticStatusUpdate("Word Finder Scan Completed", `Found ${totalMatches} matching instances across files.`);
+    }
+
+    async function generateMindmapAction() {
+      const doc = state.documents.find(d => d.id === state.activeDocId) || state.documents[0];
+      if (!doc) return;
+
+      showToast("Compiling nodes map graph. Translating key relationship branches...", "info");
+      postAgenticStatusUpdate("Graphical Mindmap Generator", `Creating hierarchical node connections on active file "${doc.name}".`);
+
+      const systemPrompt = `
+Generate EXACTLY 1 dynamic concept Mind Map representing relationships inside this document.
+Provide safe, age-appropriate, clean, and healthy responses.
+Output output EXACTLY in a valid JSON object matching this strict node hierarchy:
+{
+  "name": "Central Core Concept",
+  "children": [
+    {
+      "name": "Major Branch Title A",
+      "children": [
+        { "name": "Subtopic element A1" },
+        { "name": "Subtopic element A2" }
+      ]
+    },
+    {
+      "name": "Major Branch Title B",
+      "children": [
+        { "name": "Subtopic element B1" }
+      ]
+    }
+  ]
+}
+Do not return any markdown comments or wrapper code tags.
+
+DOCUMENT EXTRACT:
+${doc.contentText.substring(0, 8000)}
+`;
+
+      try {
+        const textResponse = await callGeminiAPI(state.apiKey, systemPrompt, []);
+        const sanitized = textResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const nodeData = JSON.parse(sanitized);
+
+        document.getElementById('mm-empty').classList.add('hidden');
+        document.getElementById('mm-canvas-container').classList.remove('hidden');
+
+        // Draw node elements cleanly into SVG
+        renderSVGInteractiveMindmap(nodeData);
+
+        addToWorkspaceHistory(`Dynamic Mindmap Core`, 'mindmap', JSON.stringify(nodeData, null, 2));
+        postAgenticStatusUpdate("Graphical Node Tree Saved", `Mindmap successfully plotted to screen layout canvas.`);
+
+      } catch (err) {
+        console.error(err);
+        showToast("Error parsing node maps.", "error");
+      }
+    }
+
+    function renderSVGInteractiveMindmap(data) {
+      const svg = document.getElementById('mm-svg');
+      svg.innerHTML = ''; // reset SVG
+
+      const width = svg.clientWidth || 600;
+      const height = svg.clientHeight || 380;
+      const midX = width / 2;
+      const midY = height / 2;
+
+      // Define static tree nodes structure parameters
+      const nodesList = [];
+      const linksList = [];
+
+      // Recursive flat positioning mapper
+      function constructSubBranches(node, posX, posY, stepX, stepY, depth) {
+        const nodeItem = { name: node.name, x: posX, y: posY, depth: depth };
+        nodesList.push(nodeItem);
+
+        if (node.children && node.children.length > 0) {
+          const branchesTotal = node.children.length;
+          node.children.forEach((child, i) => {
+            const spreadY = posY + (i - (branchesTotal - 1) / 2) * stepY;
+            const targetX = posX + stepX;
+            
+            linksList.push({ source: nodeItem, target: { name: child.name, x: targetX, y: spreadY } });
+            constructSubBranches(child, targetX, spreadY, stepX, stepY * 0.7, depth + 1);
+          });
+        }
+      }
+
+      // Initiate recursive builds mapping
+      constructSubBranches(data, 100, midY, 150, 110, 0);
+
+      // Draw Connection Lines
+      linksList.forEach(lnk => {
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", `M ${lnk.source.x} ${lnk.source.y} C ${(lnk.source.x + lnk.target.x)/2} ${lnk.source.y}, ${(lnk.source.x + lnk.target.x)/2} ${lnk.target.y}, ${lnk.target.x} ${lnk.target.y}`);
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", "#3b82f6");
+        path.setAttribute("stroke-width", "1.5");
+        path.setAttribute("stroke-dasharray", "1 1");
+        svg.appendChild(path);
+      });
+
+      // Draw Node Elements
+      nodesList.forEach(node => {
+        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        group.className = "mindmap-node cursor-pointer";
+
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", node.x - 60);
+        rect.setAttribute("y", node.y - 18);
+        rect.setAttribute("width", "120");
+        rect.setAttribute("height", "32");
+        rect.setAttribute("rx", "8");
+        rect.setAttribute("fill", node.depth === 0 ? "#2563eb" : (node.depth === 1 ? "#3b82f6" : "#60a5fa"));
+        rect.setAttribute("stroke", "#ffffff");
+        rect.setAttribute("stroke-width", "1");
+        group.appendChild(rect);
+
+        const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        txt.setAttribute("x", node.x);
+        txt.setAttribute("y", node.y + 4);
+        txt.setAttribute("text-anchor", "middle");
+        txt.setAttribute("fill", "#ffffff");
+        txt.setAttribute("font-size", "9");
+        txt.setAttribute("font-weight", "600");
+        
+        // Truncate long nodes titles
+        const safeText = node.name.length > 18 ? node.name.substring(0, 16) + "..." : node.name;
+        txt.textContent = safeText;
+        group.appendChild(txt);
+
+        svg.appendChild(group);
+      });
+    }
+
+    async function generateSlidesAction() {
+      const docId = document.getElementById('slides-doc-select')?.value;
+      const concept = document.getElementById('slide-concept').value.trim();
+      const style = document.getElementById('slide-theme').value;
+      const doc = state.documents.find(d => d.id === docId) || state.documents[0];
+
+      if (!doc) {
+        showToast("No active document selected for presentation synthesis.", "error");
+        return;
+      }
+      showToast("Synthesizing logic flow framework. Compiling presentation elements...", "info");
+      postAgenticStatusUpdate("Strategic Deck Maker", `Drafting 5 educational slides from source file "${doc.name}" focusing on "${concept || 'General Summary'}".`);
+
+      const systemPrompt = `
+Generate EXACTLY 5 student slides summarizing key details about "${concept || 'the document'}".
+Provide safe, age-appropriate, clean, and healthy responses.
+Return output EXACTLY in a valid JSON array format matching this strict schema:
+[
+  { "title": "Slide Title Concept", "body": "Key synthesized detailed paragraph explaining focus area (limit 150 words).", "notes": "Speaker guiding reference context (limit 50 words)." }
+]
+Do not return markdown tags. Output raw JSON string list only.
+
+DOCUMENT EXTRACT:
+${doc.contentText.substring(0, 8000)}
+`;
+
+      try {
+        const textResponse = await callGeminiAPI(state.apiKey, systemPrompt, []);
+        const sanitized = textResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const jsonArray = JSON.parse(sanitized);
+
+        if (Array.isArray(jsonArray)) {
+          activeToolState = {
+            slides: jsonArray,
+            activeIndex: 0
+          };
+
+          document.getElementById('slide-empty').classList.add('hidden');
+          document.getElementById('slide-playground').classList.remove('hidden');
+
+          renderActiveSlideshowSlide();
+          setupSlideshowInteractivity();
+
+          addToWorkspaceHistory(`Slide Deck Brief`, 'deck', JSON.stringify(jsonArray, null, 2));
+          postAgenticStatusUpdate("Slides Compiling Completed", "Interactive workshop preview rendered successfully.");
+
+        } else {
+          throw new Error("Formatting error.");
+        }
+      } catch (err) {
+        console.error(err);
+        showToast("Error processing slides compilation.", "error");
+      }
+    }
+
+    function renderActiveSlideshowSlide() {
+      const slide = activeToolState.slides[activeToolState.activeIndex];
+      const header = document.getElementById('slide-card-header');
+      const title = document.getElementById('slide-card-title');
+      const body = document.getElementById('slide-card-body');
+      const notes = document.getElementById('slide-card-footer');
+      const counter = document.getElementById('slide-counter-label');
+
+      counter.textContent = `Slide ${activeToolState.activeIndex + 1} of ${activeToolState.slides.length}`;
+      header.textContent = `Academic Module Brief — Part ${activeToolState.activeIndex + 1}`;
+      title.textContent = slide.title;
+      body.textContent = slide.body;
+      notes.textContent = slide.notes ? `Speaker Notes: ${slide.notes}` : '';
+    }
+
+    function setupSlideshowInteractivity() {
+      document.getElementById('slide-prev').onclick = () => {
+        if (activeToolState.activeIndex > 0) {
+          activeToolState.activeIndex--;
+          renderActiveSlideshowSlide();
+        }
+      };
+      document.getElementById('slide-next').onclick = () => {
+        if (activeToolState.activeIndex < activeToolState.slides.length - 1) {
+          activeToolState.activeIndex++;
+          renderActiveSlideshowSlide();
+        }
+      };
+    }
+
+
+    // --- BUSINESS MODE ACTION ALGORITHMS ---
+
+    async function generateTrendAnalysisAction() {
+      const doc = state.documents.find(d => d.id === state.activeDocId) || state.documents[0];
+      if (!doc) return;
+
+      showToast("Extracting numeric entities. Simulating market trends...", "info");
+      postAgenticStatusUpdate("Data Extraction & Forecast Engine", `Synthesizing comparative values from corporate resource: "${doc.name}".`);
+
+      const systemPrompt = `
+Analyze trends inside this document. Extract operational parameters.
+Provide safe, age-appropriate, clean, and healthy responses.
+Return output EXACTLY in a valid JSON object matching this strict schema:
+{
+  "labels": ["Item 1", "Item 2", "Item 3", "Item 4"],
+  "dataset": [10, 45, 60, 95],
+  "recommendations": [
+    "Strategy element 1 targeting operational growth.",
+    "Strategic analysis element 2 mapping risks."
+  ]
+}
+Do not include code wrapper headers. Output raw json string.
+
+DOCUMENT CONTENT EXTRACT:
+${doc.contentText.substring(0, 8000)}
+`;
+
+      try {
+        const textResponse = await callGeminiAPI(state.apiKey, systemPrompt, []);
+        const sanitized = textResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const dataObj = JSON.parse(sanitized);
+
+        // Turn visual viewer frame active
+        document.getElementById('trend-viewer').classList.remove('hidden');
+
+        // Draw core trend chart natively using Chart.js
+        const canvasCtx = document.getElementById('trend-canvas').getContext('2d');
+        
+        // Destory previous instance if exists
+        if (activeToolState.chartInstance) {
+          activeToolState.chartInstance.destroy();
+        }
+
+        activeToolState.chartInstance = new Chart(canvasCtx, {
+          type: 'line',
+          data: {
+            labels: dataObj.labels,
+            datasets: [{
+              label: 'Corporate Forecast Trajectory',
+              data: dataObj.dataset,
+              borderColor: '#f43f5e',
+              backgroundColor: 'rgba(244, 63, 94, 0.1)',
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { grid: { color: 'rgba(150, 150, 150, 0.1)' } } }
+          }
+        });
+
+        // Map recommendations bullets
+        const bulletCont = document.getElementById('trend-bullets-container');
+        bulletCont.innerHTML = '';
+        
+        dataObj.recommendations.forEach(rec => {
+          const p = document.createElement('p');
+          p.className = "text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-950 p-2.5 border border-slate-100 dark:border-slate-800 rounded-xl";
+          p.innerHTML = `<strong>•</strong> ${escapeHTML(rec)}`;
+          bulletCont.appendChild(p);
+        });
+
+        addToWorkspaceHistory(`Trend Strategy Synthesis`, 'report', JSON.stringify(dataObj, null, 2));
+        postAgenticStatusUpdate("Operational Risk Trend Compiled", "Statistical plot mapped successfully.");
+
+      } catch (err) {
+        console.error(err);
+        showToast("Trend analysis compile error.", "error");
+      }
+    }
+
+    async function generateBusinessDeckAction() {
+      const org = document.getElementById('deck-org').value.trim();
+      const doc = state.documents.find(d => d.id === state.activeDocId) || state.documents[0];
+      if (!doc) return;
+
+      showToast("Synthesizing investor metrics. Mapping strategy slides...", "info");
+      postAgenticStatusUpdate("SWOT & Presentation Planner", `Structuring stakeholder presentation deck for brand: "${org || 'Strategic Partner Group'}" using corporate documentation.`);
+
+      const systemPrompt = `
+Generate EXACTLY 5 investor strategy pitch slides about "${org || 'this organization'}" referencing document resources.
+Provide safe, age-appropriate, clean, and healthy responses.
+Return output EXACTLY in a valid JSON array format matching this strict schema:
+[
+  { "title": "Slide Title", "body": "High value analytical corporate strategy summary details mapped directly (limit 150 words)." }
+]
+Do not include markdown remarks or tag symbols. Output raw JSON only.
+
+DOCUMENT EXTRACT:
+${doc.contentText.substring(0, 8000)}
+`;
+
+      try {
+        const textResponse = await callGeminiAPI(state.apiKey, systemPrompt, []);
+        const sanitized = textResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const jsonArray = JSON.parse(sanitized);
+
+        if (Array.isArray(jsonArray)) {
+          activeToolState = {
+            slides: jsonArray,
+            activeIndex: 0
+          };
+
+          document.getElementById('deck-empty').classList.add('hidden');
+          document.getElementById('deck-playground').classList.remove('hidden');
+
+          renderActiveCorporateDeckSlide();
+          setupCorporateDeckInteractivity();
+
+          addToWorkspaceHistory(`Investor Slide Config`, 'deck', JSON.stringify(jsonArray, null, 2));
+          postAgenticStatusUpdate("Investor Presentation Compiled", "Restructured slide assets into interactive sandbox deck workspace.");
+
+        } else {
+          throw new Error("Array parse error.");
+        }
+      } catch (err) {
+        console.error(err);
+        showToast("Investor pitch compilation error.", "error");
+      }
+    }
+
+    function renderActiveCorporateDeckSlide() {
+      const slide = activeToolState.slides[activeToolState.activeIndex];
+      const header = document.getElementById('deck-card-header');
+      const title = document.getElementById('deck-card-title');
+      const body = document.getElementById('deck-card-body');
+      const counter = document.getElementById('deck-counter-label');
+
+      counter.textContent = `Slide ${activeToolState.activeIndex + 1} of ${activeToolState.slides.length}`;
+      header.textContent = `Investor Pitch Compilation — Pillar Module ${activeToolState.activeIndex + 1}`;
+      title.textContent = slide.title;
+      body.textContent = slide.body;
+    }
+
+    function setupCorporateDeckInteractivity() {
+      document.getElementById('deck-prev').onclick = () => {
+        if (activeToolState.activeIndex > 0) {
+          activeToolState.activeIndex--;
+          renderActiveCorporateDeckSlide();
+        }
+      };
+      document.getElementById('deck-next').onclick = () => {
+        if (activeToolState.activeIndex < activeToolState.slides.length - 1) {
+          activeToolState.activeIndex++;
+          renderActiveCorporateDeckSlide();
+        }
+      };
+    }
+
+    // Chart model actions
+    function renderCustomChartAction() {
+      const lbls = document.getElementById('chart-lbls').value.split(',').map(l => l.trim());
+      const vals = document.getElementById('chart-vals').value.split(',').map(v => parseFloat(v.trim()));
+      const type = document.getElementById('chart-style-sel').value;
+
+      if (vals.some(isNaN)) {
+        showToast("Ensure data array values are numeric parameters.", "error");
+        return;
+      }
+
+      showToast("Compiling custom chart representations...", "info");
+      postAgenticStatusUpdate("Interactive Chart Modeler", `Drawing graphic representations for indicators: [${lbls.join(', ')}] with values [${vals.join(', ')}].`);
+
+      const canvasCtx = document.getElementById('custom-model-canvas').getContext('2d');
+      if (activeToolState.customChartInstance) {
+        activeToolState.customChartInstance.destroy();
+      }
+
+      activeToolState.customChartInstance = new Chart(canvasCtx, {
+        type: type,
+        data: {
+          labels: lbls,
+          datasets: [{
+            label: 'Analytical Target Matrix',
+            data: vals,
+            backgroundColor: type === 'pie' 
+              ? ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b'] 
+              : 'rgba(59, 130, 246, 0.35)',
+            borderColor: '#3b82f6',
+            borderWidth: 1.5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: type === 'pie' } }
+        }
+      });
+      postAgenticStatusUpdate("Dynamic Graph Render Completed", `Plotted target dataset into visual layout context.`);
+    }
+
+    async function generateSpreadsheetAction() {
+      const doc = state.documents.find(d => d.id === state.activeDocId) || state.documents[0];
+      if (!doc) return;
+
+      showToast("Scanning unstructured tabular layouts. Compiling dataset sheet...", "info");
+      postAgenticStatusUpdate("Spreadsheet Synthesizer Engine", `Parsing financial listings, columns, and metric tables from document text inside "${doc.name}".`);
+
+      const systemPrompt = `
+Identify analytical comparative factors or statistical arrays inside this document.
+Compile elements into EXACTLY 4 key structured spreadsheet rows containing 4 matching columns.
+Provide safe, age-appropriate, clean, and healthy responses.
+Return output EXACTLY in a valid JSON object matching this strict schema:
+{
+  "headers": ["Header Column 1", "Header Column 2", "Header Column 3", "Header Column 4"],
+  "rows": [
+    ["Row element 1A", "Row element 1B", "Row element 1C", "Row element 1D"],
+    ["Row element 2A", "Row element 2B", "Row element 2C", "Row element 2D"]
+  ]
+}
+Do not use markdown code tag wrapper formats. Output raw JSON object string only.
+
+DOCUMENT CONTENT EXTRACT:
+${doc.contentText.substring(0, 8000)}
+`;
+
+      try {
+        const textResponse = await callGeminiAPI(state.apiKey, systemPrompt, []);
+        const sanitized = textResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const dataObj = JSON.parse(sanitized);
+
+        document.getElementById('sheets-workspace').classList.remove('hidden');
+
+        const table = document.getElementById('workspace-excel-table');
+        table.innerHTML = '';
+
+        // Draw headers row
+        const thead = document.createElement('thead');
+        thead.className = "bg-slate-100 dark:bg-slate-800 text-[10px] uppercase font-bold text-slate-500";
+        const hRow = document.createElement('tr');
+        dataObj.headers.forEach(h => {
+          hRow.innerHTML += `<th class="p-3 border border-slate-200 dark:border-slate-800">${escapeHTML(h)}</th>`;
+        });
+        thead.appendChild(hRow);
+        table.appendChild(thead);
+
+        // Draw table rows elements
+        const tbody = document.createElement('tbody');
+        dataObj.rows.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.className = "border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/40";
+          r.forEach(cell => {
+            tr.innerHTML += `<td class="p-3 border border-slate-200 dark:border-slate-800">${escapeHTML(cell)}</td>`;
+          });
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+
+        addToWorkspaceHistory(`Data Matrix Worksheet`, 'excel', JSON.stringify(dataObj, null, 2));
+        postAgenticStatusUpdate("Workspace Sheet Structured Successfully", `Compiled clean dataset matrix representing variables within "${doc.name}".`);
+
+      } catch (err) {
+        console.error(err);
+        showToast("Error processing tabular data extract.", "error");
+      }
+    }
+
+    async function generateInvoiceAction() {
+      const sender = document.getElementById('inv-entity').value.trim();
+      const recipient = document.getElementById('inv-client').value.trim();
+      const doc = state.documents.find(d => d.id === state.activeDocId) || state.documents[0];
+
+      if (!doc) return;
+      showToast("Compiling comparative analytical services ledger...", "info");
+      postAgenticStatusUpdate("Strategic Invoice Generator", `Compiling dynamic services/billing entities identified inside document text.`);
+
+      const systemPrompt = `
+Identify major projects, activities, hours, metrics or resource details in this document.
+Provide safe, age-appropriate, clean, and healthy responses.
+Extract metrics and build EXACTLY a valid JSON schema representing a structured financial invoice:
+[
+  { "desc": "Project/Service activity detail", "qty": 10, "unitRate": 150 },
+  { "desc": "Secondary milestone parameter", "qty": 5, "unitRate": 200 }
+]
+Note: Keep quantities and rates as real numeric integers. Do not include markdown wraps.
+
+DOCUMENT EXTRACT:
+${doc.contentText.substring(0, 8000)}
+`;
+
+      try {
+        const textResponse = await callGeminiAPI(state.apiKey, systemPrompt, []);
+        const sanitized = textResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const jsonArray = JSON.parse(sanitized);
+
+        if (Array.isArray(jsonArray)) {
+          // Open Workspace Panels
+          document.getElementById('invoice-empty').classList.add('hidden');
+          document.getElementById('invoice-workspace').classList.remove('hidden');
+
+          document.getElementById('inv-out-sender').textContent = sender;
+          document.getElementById('inv-out-client').textContent = recipient;
+
+          const table = document.getElementById('invoice-items-table');
+          table.innerHTML = `
+            <thead>
+              <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-[9px]">
+                <th class="py-2">Description</th>
+                <th class="py-2 text-center">Qty</th>
+                <th class="py-2 text-right">Unit Rate</th>
+                <th class="py-2 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody id="invoice-bill-tbody"></tbody>
+          `;
+
+          const tbody = document.getElementById('invoice-bill-tbody');
+          let subtotal = 0;
+
+          jsonArray.forEach(item => {
+            const lineTotal = item.qty * item.unitRate;
+            subtotal += lineTotal;
+
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-slate-100 dark:border-slate-800 text-xs";
+            tr.innerHTML = `
+              <td class="py-3 font-semibold text-slate-700 dark:text-slate-300">${escapeHTML(item.desc)}</td>
+              <td class="py-3 text-center">${item.qty}</td>
+              <td class="py-3 text-right">$${formatNumber(item.unitRate)}</td>
+              <td class="py-3 text-right font-bold text-slate-800 dark:text-slate-100">$${formatNumber(lineTotal)}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+
+          // Draw Total Summary bottom
+          const totalTr = document.createElement('tr');
+          totalTr.className = "text-xs font-bold";
+          totalTr.innerHTML = `
+            <td colspan="2"></td>
+            <td class="py-4 text-right text-slate-400">Total Due:</td>
+            <td class="py-4 text-right text-base text-blue-600 dark:text-blue-400">$${formatNumber(subtotal)}</td>
+          `;
+          tbody.appendChild(totalTr);
+
+          addToWorkspaceHistory(`Operational Invoice Matrix`, 'invoice', JSON.stringify(jsonArray, null, 2));
+          postAgenticStatusUpdate("Ledger Generation Successful", `Created dynamic tax ledger billing to client partner: "${recipient}".`);
+
+        } else {
+          throw new Error("Type error.");
+        }
+      } catch (err) {
+        console.error(err);
+        showToast("Error processing invoice synthesis.", "error");
+      }
+    }
+
+
+    // --- CHAT INTERACTION LOGIC (RAG PATTERNS) ---
+    function updateSendButtonState() {
+      const ok = el.chatTextarea.value.trim().length > 0;
+      el.sendMessageBtn.disabled = !ok || state.isGenerating;
+    }
+
+    function performRAGRetrieval(query) {
+      const matchChunks = [];
+      const keywords = query.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+
+      if (state.documents.length === 0) return [];
+
+      state.documents.forEach(doc => {
+        doc.pages.forEach(page => {
+          let score = 0;
+          const textLower = page.text.toLowerCase();
+
+          keywords.forEach(word => {
+            if (textLower.includes(word)) {
+              score += 10;
+              const occurrenceMatches = textLower.match(new RegExp(escapeRegExp(word), 'g'));
+              if (occurrenceMatches) score += occurrenceMatches.length * 2;
+            }
+          });
+
+          if (score > 0) {
+            matchChunks.push({
+              docName: doc.name,
+              pageNum: page.pageNum,
+              text: page.text,
+              score: score
+            });
+          }
+        });
+      });
+
+      matchChunks.sort((a, b) => b.score - a.score);
+      return matchChunks.slice(0, 4);
+    }
+
+    async function triggerChatMessage() {
+      if (state.isGenerating) return;
+
+      const text = el.chatTextarea.value.trim();
+      if (!text) return;
+
+      if (!state.apiKey) {
+        showToast("Gemini Key is missing in top-bar connect panel.", "error");
+        return;
+      }
+
+      appendMessageToChatFeed('user', text);
+      state.chatHistory.push({ role: 'user', text: text });
+
+      el.chatTextarea.value = '';
+      el.chatTextarea.style.height = 'auto';
+      updateSendButtonState();
+
+      const typingId = appendTypingIndicator();
+      state.isGenerating = true;
+
+      try {
+        const matchingContexts = performRAGRetrieval(text);
+        let dynamicContextPrompt = "";
+
+        const modeDescription = state.activeMode === 'school' 
+          ? "You are an encouraging Academic Tutor. Explain concepts clearly, break down scientific parameters, keep definitions age-appropriate (safe for users under 18), clean, educational, and focused on student learning."
+          : "You are an Executive Business Analyst. Provide formal, crisp, strategic insights, target market operational priorities, and structure summaries around clear, data-driven parameters.";
+
+        if (matchingContexts.length > 0) {
+          dynamicContextPrompt = `
+${modeDescription}
+Provide safe, age-appropriate, clean, and healthy responses. Avoid any harmful, illegal, or suggestive topics.
+Analyze the scientific/corporate details mapped natively inside the document excerpt chunks below and form a comprehensive answer.
+Whenever utilizing information, always cite inline or at the bottom using exactly this format:
+[DocName.pdf — Page X]
+
+CONTEXT EXTRACT CHUNKS:
+${matchingContexts.map((c, i) => `--- CHUNK ${i+1} [File: ${c.docName} | Page: ${c.pageNum}] ---\n${c.text}`).join('\n\n')}
+
+USER QUESTION TO ANSWER:
+"${text}"
+`;
+        } else {
+          // Agentic Nature fallback: The query is generic or not related to uploaded files. Still answers fully!
+          dynamicContextPrompt = `
+${modeDescription}
+Provide safe, age-appropriate, clean, and healthy responses. Avoid any harmful, illegal, or suggestive topics.
+The user asked a general question: "${text}".
+No direct matching text chunks are loaded in the current workspace. Answer this general query fully and comprehensively using your broad training knowledge in clear Markdown. Keep explanations educational, safe, and helpful.
+`;
+        }
+
+        const rawResultText = await callGeminiAPI(state.apiKey, dynamicContextPrompt, state.chatHistory);
+        removeTypingIndicator(typingId);
+
+        appendMessageToChatFeed('model', rawResultText);
+        state.chatHistory.push({ role: 'model', text: rawResultText });
+
+      } catch (err) {
+        console.error(err);
+        removeTypingIndicator(typingId);
+        appendMessageToChatFeed('model', `**Generation Error:** ${err.message}. Please test credentials/network integrity.`, true);
+      } finally {
+        state.isGenerating = false;
+        updateSendButtonState();
+      }
+    }
+
+    function appendMessageToChatFeed(role, text, isError = false) {
+      const msgWrap = document.createElement('div');
+      msgWrap.className = `flex items-start space-x-3 transition-opacity duration-300 opacity-0 ${role === 'user' ? 'justify-end' : ''}`;
+      
+      const parsedHTMLContent = formatMarkdown(text);
+      
+      if (role === 'user') {
+        msgWrap.innerHTML = `
+          <div class="bg-blue-600 text-white rounded-2xl rounded-tr-none p-3 text-xs max-w-[85%] leading-relaxed shadow-sm">
+            <p class="whitespace-pre-wrap">${escapeHTML(text)}</p>
+          </div>
+          <div class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center shrink-0">
+            <i data-lucide="user" class="w-4 h-4"></i>
+          </div>
+        `;
+      } else {
+        const avatarThemeBg = state.activeMode === 'school' ? 'bg-blue-100 text-blue-600' : 'bg-rose-100 text-rose-600';
+        msgWrap.innerHTML = `
+          <div class="w-7 h-7 rounded-lg ${avatarThemeBg} flex items-center justify-center shrink-0">
+            <i data-lucide="bot" class="w-4 h-4"></i>
+          </div>
+          <div class="relative bg-slate-50 dark:bg-slate-800/40 border ${isError ? 'border-red-200 dark:border-red-900 bg-red-50/50' : 'border-slate-100 dark:border-slate-800'} rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-700 dark:text-slate-300 max-w-[85%] leading-relaxed group">
+            <div class="markdown-body space-y-2">${parsedHTMLContent}</div>
+            
+            <div class="absolute -bottom-3 right-2 flex items-center space-x-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 px-1.5 py-0.5 rounded-md shadow-sm">
+              <button class="text-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center gap-1" onclick="copyToClipboard(this)">
+                <i data-lucide="copy" class="w-3 h-3"></i>
+                <span>Copy</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      el.chatFeed.appendChild(msgWrap);
+      lucide.createIcons();
+      
+      setTimeout(() => {
+        msgWrap.classList.remove('opacity-0');
+        el.chatFeed.scrollTo({ top: el.chatFeed.scrollHeight, behavior: 'smooth' });
+      }, 50);
+    }
+
+    function appendTypingIndicator() {
+      const uid = 'typing_' + Date.now();
+      const typingWrap = document.createElement('div');
+      typingWrap.id = uid;
+      typingWrap.className = "flex items-start space-x-3 transition-opacity duration-300";
+      
+      typingWrap.innerHTML = `
+        <div class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+          <i data-lucide="bot" class="w-4 h-4"></i>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-400 max-w-[85%] flex items-center space-x-1.5">
+          <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+          <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+          <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+        </div>
+      `;
+      el.chatFeed.appendChild(typingWrap);
+      lucide.createIcons();
+      el.chatFeed.scrollTo({ top: el.chatFeed.scrollHeight, behavior: 'smooth' });
+      return uid;
+    }
+
+    // Dynamic element remover
+    function removeTypingIndicator(uid) {
+      const indicator = document.getElementById(uid);
+      if (indicator) indicator.remove();
+    }
+
+    // --- PARSER UTILITIES ---
+    function formatMarkdown(text) {
+      if (!text) return '';
+      let html = escapeHTML(text);
+
+      html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+      html = html.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-red-600 dark:text-red-400 font-mono">$1</code>');
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      html = html.replace(/^\s*-\s+(.+)$/gm, '<li class="list-disc ml-4 my-1">$1</li>');
+
+      // Citation structure style highlights [DocName.pdf — Page X]
+      html = html.replace(/\[([^\]]+?\.(?:pdf|PDF)\s*[—|-]\s*Page\s*\d+)\]/g, 
+        '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 text-[10px] font-semibold text-blue-600 dark:text-blue-400 rounded-full my-0.5">$1</span>');
+
+      return html;
+    }
+
+    // Dynamic clean HTML formatting
+    function escapeHTML(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Concordance regular expression helper
+    function escapeRegExp(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function copyToClipboard(button) {
+      const textContainer = button.closest('.group').querySelector('.markdown-body');
+      if (!textContainer) return;
+
+      const textToCopy = textContainer.innerText || textContainer.textContent;
+      const textarea = document.createElement('textarea');
+      textarea.value = textToCopy;
+      textarea.style.position = 'fixed';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast('Text copied!', 'success');
+      } catch (err) {
+        showToast('Unable to copy.', 'error');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function clearChatFeed() {
+      state.chatHistory = [];
+      const title = state.activeMode === 'school' ? "Hello! I am your Academic Study Coach." : "Hello! I am your Business Analyst Assistant.";
+      const desc = state.activeMode === 'school' 
+        ? "Upload study materials, slide decks, or lecture files. I will clarify educational terms and search text with citations! Feel free to switch between School and Business modes up top."
+        : "In Business Mode, I leverage an executive RAG framework to build trend tables, investor slide configurations, and invoice structures from operational reports.";
+
+      el.chatFeed.innerHTML = `
+        <div class="flex items-start space-x-3 msg-ai">
+          <div class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <i data-lucide="bot" class="w-4 h-4"></i>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-700 dark:text-slate-300 max-w-[85%] leading-relaxed">
+            <p class="font-medium mb-1">${title}</p>
+            <p>${desc}</p>
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+      showToast('Chat feed cleared.', 'info');
+    }
+
+    function exportChatHistory() {
+      if (state.chatHistory.length === 0) {
+        showToast("No active history to export.", "info");
+        return;
+      }
+      let content = "Research Notebook AI - Chat Export\n===================================\n\n";
+      state.chatHistory.forEach(msg => {
+        content += `[${msg.role === 'user' ? 'USER' : 'ASSISTANT'}]\n${msg.text}\n\n`;
+      });
+
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `notebook-chat-export-${Date.now()}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    // Dynamic clean number parser formatter
+    function formatNumber(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+  </script>
+</body>
+</html>
